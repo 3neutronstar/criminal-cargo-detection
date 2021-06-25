@@ -3,15 +3,15 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader,TensorDataset
 from torch.utils.data import Subset
-
+import torch
 
 def load_dataset(datapath,configs):
-    table_data=np.load(os.path.join(datapath,'mod_data.npy'))
-    crime_target=np.load(os.path.join(datapath,'mod_crime_tarte.npy'))
-    priority_target=np.load(os.path.join(datapath,'mod_priority_target.npy'))
-    train_indices=np.load(os.path.join(datapath,'mod_train_index.npy'))
-    test_indices=np.load(os.path.join(datapath,'mod_test_index.npy'))
-    
+    table_data=torch.tensor(np.load(os.path.join(datapath,'mod_data.npy')))
+    crime_target=torch.tensor(np.load(os.path.join(datapath,'mod_crime_target.npy')))
+    priority_target=torch.tensor(np.load(os.path.join(datapath,'mod_priority_target.npy')))
+    train_indices=torch.tensor(np.load(os.path.join(datapath,'mod_train_index.npy')))
+    test_indices=torch.tensor(np.load(os.path.join(datapath,'mod_test_index.npy')))
+   
 
     if configs['mode']=='train_crime':
         crime_dataset=TensorDataset(table_data,crime_target)

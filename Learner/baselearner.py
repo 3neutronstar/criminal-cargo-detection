@@ -1,4 +1,4 @@
-from Learner.indlearner import CrimeLearner, PriorityLearner
+
 import time
 import torch
 import logging
@@ -6,11 +6,6 @@ from DataProcessing.load_data import load_dataloader
 from Utils.calc_score import calc_score
 from Model.basemodel import MODEL
 
-LEARNER={
-    'crime':CrimeLearner,
-    'priority':PriorityLearner,
-
-}
 class BaseLearner:
     def __init__(self,logger, datapath, savepath, device, configs):
         self.datapath=datapath
@@ -19,7 +14,7 @@ class BaseLearner:
         self.train_dataloader,self.test_dataloader=load_dataloader(self.datapath,configs)
         self.configs=configs
         self.logger=logger
-        input_space=self.train_dataloader.dataset[0].size()
+        input_space=self.train_dataloader.dataset[0][0].size()[0]
         output_space=2
         self.model=MODEL[configs['mode'].split('_')[1]](input_space,output_space,configs)
 
@@ -43,8 +38,9 @@ class BaseLearner:
         }
         best_f1score=0.0
         best_acc=0.0
+        self.logger.info(self.configs)
 
-        for epoch in range(1,self.configs['epoch']+1):
+        for epoch in range(1,self.configs['epochs']+1):
             train_score_dict=score_dict
             eval_score_dict=score_dict
             #Init
@@ -54,17 +50,17 @@ class BaseLearner:
             train_tik=time.time()
             train_score_dict=self._train(epoch,train_score_dict)
             train_tok=time.time()
-            print('Learning Time: ',train_tok-train_tik,'s')
+            print('Learning Time: {:.3f}s'.format(train_tok-train_tik))
             self.logger=logging.getLogger('train')
             self.logger.info('\n[{}Epoch] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
                 epoch,train_score_dict['loss'], train_score_dict['accuracy'],train_score_dict['precision'],train_score_dict['recall'],train_score_dict['f1score']))
             
             #Eval
-            eval_score_dict=self._eval(epoch)
+            eval_score_dict=self._eval(epoch,eval_score_dict)
             self.logger=logging.getLogger('eval')
             self.logger.info('\n[{}Epoch] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
                 epoch,eval_score_dict['loss'], eval_score_dict['accuracy'],eval_score_dict['precision'],eval_score_dict['recall'],eval_score_dict['f1score']))
-            print('='*30)
+
             if best_f1score<eval_score_dict['f1score']:
                 best_f1score=eval_score_dict['f1score']
                 best_acc=eval_score_dict['accuracy']
@@ -72,7 +68,7 @@ class BaseLearner:
             self.scheduler.step()
 
         self.logger = logging.getLogger('best')
-        self.logger.info('[Best Acc {:.2f}] [Best F1 {:.3f}]'.format(best_acc,best_f1score))
+        self.logger.info('[Mode {}] [Best Acc {:.2f}] [Best F1 {:.3f}]'.format(self.configs['mode'],best_acc,best_f1score))
         print('==End==')
 
     def _train(self,epoch,score_dict):
