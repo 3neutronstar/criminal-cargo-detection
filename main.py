@@ -7,7 +7,7 @@ from Utils.logger import set_logging_defaults
 from Utils.seed import fix_seed
 from Utils.params import save_params
 from Learner.indlearner import CrimeLearner, PriorityLearner
-from Learner.xgboost import XGBoost
+from Learner.xgboost import XGBoostLearner
 from DataProcessing.gen_data import gen_data
 import logging
 
@@ -23,7 +23,7 @@ def parse_args(args):
         epilog="python run.py mode")
     
     parser.add_argument(
-        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','eval','record','train_xgboost'])
+        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','eval','record','train_xgboost_crime','train_xgboost_priority'])
     #TRAIN SECTION
     parser.add_argument(
         '--seed', type=int, default=1,
