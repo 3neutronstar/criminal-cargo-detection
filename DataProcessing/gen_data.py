@@ -75,12 +75,15 @@ def gen_data(data_path):
     # train_tensor_data=torch.cat((train_price_tensor,train_weight_tensor,train_custom_rate_tensor),dim=1)
     del train_price,train_weight,train_custom_rate,train_encoded_data
     print(train_tensor_data.size())
-    train_indices,test_indices=train_test_split(indices,stratify=crime_target)
+    train_crime_indices,test_crime_indices=train_test_split(indices,stratify=crime_target)
+    train_priority_indices,test_priority_indices=train_test_split(indices,stratify=priority_target)
 
     np.save(os.path.join(data_path,'mod_data.npy'),train_tensor_data.numpy())
     np.save(os.path.join(data_path,'mod_crime_target.npy'),crime_target)
     np.save(os.path.join(data_path,'mod_priority_target.npy'),priority_target)
-    np.save(os.path.join(data_path,'mod_train_index.npy'),train_indices)
-    np.save(os.path.join(data_path,'mod_test_index.npy'),test_indices)
+    np.save(os.path.join(data_path,'mod_train_index.npy'),train_crime_indices)
+    np.save(os.path.join(data_path,'mod_test_index.npy'),test_crime_indices)
+    np.save(os.path.join(data_path,'mod_train_index.npy'),train_priority_indices)
+    np.save(os.path.join(data_path,'mod_test_index.npy'),test_priority_indices)
     print('Transform Finished')
     return

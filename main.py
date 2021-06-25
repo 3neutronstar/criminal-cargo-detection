@@ -7,11 +7,14 @@ from Utils.logger import set_logging_defaults
 from Utils.seed import fix_seed
 from Utils.params import save_params
 from Learner.indlearner import CrimeLearner, PriorityLearner
+from Learner.xgboost import XGBoost
+from DataProcessing.gen_data import gen_data
 import logging
 
 LEARNER={
     'crime':CrimeLearner,
     'priority':PriorityLearner,
+    'xgboost':XGBoostLearner,
 }
 
 def parse_args(args):
@@ -20,7 +23,7 @@ def parse_args(args):
         epilog="python run.py mode")
     
     parser.add_argument(
-        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','eval','record'])   
+        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','eval','record','train_xgboost'])
     #TRAIN SECTION
     parser.add_argument(
         '--seed', type=int, default=1,
@@ -46,6 +49,13 @@ def parse_args(args):
     parser.add_argument(
         '--epochs', type=int, default=200,
         help='run epochs')
+    parser.add_argument(
+        '--lr_decay', type=int, default=3,
+        help='run epochs')
+    parser.add_argument(
+        '--lr_decay_rate', type=float, default=0.8,
+        help='run epochs')
+
     return parser.parse_known_args(args)[0]  
 
 def main(args):
@@ -73,6 +83,12 @@ def main(args):
     if os.path.exists(save_path) == False:
         os.mkdir(save_path)
     ####################
+
+    ## generate data ##
+    if configs['mode']=='gen_data':
+        gen_data(data_path=data_path)
+        exit()
+    ###################
 
     ## save configuration ##
     save_params(configs,current_path,time_data)

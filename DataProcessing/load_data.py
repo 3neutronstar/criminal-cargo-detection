@@ -34,8 +34,18 @@ def load_dataset(datapath,configs):
     return train_dataset, test_dataset
 
 def load_dataloader(datapath,configs):
-    train_dataset,test_dataset=load_dataset(datapath,configs)
-    train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],shuffle=True,)
-    test_dataloader=DataLoader(test_dataset,batch_size=configs['batch_size'],shuffle=False)
-    return train_dataloader,test_dataloader
+    if 'xgboost' not in configs['mode']:
+        train_dataset,test_dataset=load_dataset(datapath,configs)
+        train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],shuffle=True,)
+        test_dataloader=DataLoader(test_dataset,batch_size=configs['batch_size'],shuffle=False)
+        return train_dataloader,test_dataloader
+    else: #xgboost
+        table_data=np.load(os.path.join(datapath,'mod_data.npy'))
+        crime_target=np.load(os.path.join(datapath,'mod_crime_target.npy')) # y_1 (0,1)
+        priority_target=np.load(os.path.join(datapath,'mod_priority_target.npy')) #y_2 (0,1,2)
+        train_indices=np.load(os.path.join(datapath,'mod_train_index.npy'))
+        test_indices=np.load(os.path.join(datapath,'mod_test_index.npy'))
+        train_data=table_data[train_indices]
+        test_data=table_data[test_indices]
+        return train_data,train_target,test_data,test_target
 

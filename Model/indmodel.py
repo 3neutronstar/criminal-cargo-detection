@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+
 class CrimeModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
         super(CrimeModel,self).__init__()
