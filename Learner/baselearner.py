@@ -1,13 +1,9 @@
 
 class BaseLearner:
-    def __init__(self,logger, datapath, savepath, device, configs):
-        self.datapath=datapath # data load
-        self.savepath=savepath # save (tensorboard)
+    def __init__(self,logger,time_data, data_path, save_path, device, configs):
+        self.data_path=data_path # data load
+        self.save_path=save_path # save (tensorboard)
         self.device=device # cuda
         self.configs=configs
         self.logger=logger
-        self.input_space=self.train_dataloader.dataset[0][0].size()[0]
-        if 'crime' in configs['mode']:
-            self.output_space=2
-        elif 'priority' in configs['mode']:
-            self.output_space=3
+        self.time_data=time_data

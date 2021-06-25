@@ -81,9 +81,9 @@ def gen_data(data_path):
     np.save(os.path.join(data_path,'mod_data.npy'),train_tensor_data.numpy())
     np.save(os.path.join(data_path,'mod_crime_target.npy'),crime_target)
     np.save(os.path.join(data_path,'mod_priority_target.npy'),priority_target)
-    np.save(os.path.join(data_path,'mod_train_index.npy'),train_crime_indices)
-    np.save(os.path.join(data_path,'mod_test_index.npy'),test_crime_indices)
-    np.save(os.path.join(data_path,'mod_train_index.npy'),train_priority_indices)
-    np.save(os.path.join(data_path,'mod_test_index.npy'),test_priority_indices)
+    np.save(os.path.join(data_path,'mod_train_crime_index.npy'),train_crime_indices)
+    np.save(os.path.join(data_path,'mod_test_crime_index.npy'),test_crime_indices)
+    np.save(os.path.join(data_path,'mod_train_priority_index.npy'),train_priority_indices)
+    np.save(os.path.join(data_path,'mod_test_priority_index.npy'),test_priority_indices)
     print('Transform Finished')
     return

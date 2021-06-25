@@ -2,6 +2,7 @@ import torch
 from Utils.calc_score import calc_score
 from Model.basemodel import MODEL
 import time
+import os
 import logging
 import copy
 from Learner.baselearner import BaseLearner
@@ -9,13 +10,19 @@ from Model.basemodel import MODEL
 from DataProcessing.load_data import load_dataloader
 
 class TorchLearner(BaseLearner):
-    def __init__(self, logger, datapath, savepath, device, configs):
-        super(TorchLearner,self).__init__(logger, datapath, savepath, device, configs)
+    def __init__(self, logger,time_data, data_path, save_path, device, configs):
+        super(TorchLearner,self).__init__(logger,time_data, data_path, save_path, device, configs)
+        self.train_dataloader,self.test_dataloader=load_dataloader(self.data_path,configs) # dataloader output(tensor) -> .numpy()
+
+        self.input_space=self.train_dataloader.dataset[0][0].size()[0]
+        if 'crime' in configs['mode']:
+            self.output_space=2
+        elif 'priority' in configs['mode']:
+            self.output_space=3
         self.model=MODEL[configs['mode'].split('_')[1]](self.input_space,self.output_space,configs)
         self.criterion=self.model.criterion
         self.optimizer=self.model.optimizer
         self.scheduler=self.model.scheduler
-        self.train_dataloader,self.test_dataloader=load_dataloader(self.datapath,configs) # dataloader output(tensor) -> .numpy()
 
     def run(self):
         self.model.to(self.configs['device'])
@@ -45,7 +52,7 @@ class TorchLearner(BaseLearner):
             train_tik=time.time()
             train_score_dict=self._train(epoch,train_score_dict)
             train_tok=time.time()
-            print('\n Learning Rate: {:.8f} Learning Time: {:.3f}s'.format(self.optimizer.param_groups['lr'],train_tok-train_tik))
+            print('\n Learning Rate: {:.8f} Learning Time: {:.3f}s'.format(self.optimizer.param_groups[0]['lr'],train_tok-train_tik))
             self.logger=logging.getLogger('train')
             self.logger.info('\n[{}Epoch] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
                 epoch,train_score_dict['loss'], train_score_dict['accuracy'],train_score_dict['precision'],train_score_dict['recall'],train_score_dict['f1score']))
@@ -59,6 +66,7 @@ class TorchLearner(BaseLearner):
             if best_f1score<eval_score_dict['f1score']:
                 best_f1score=eval_score_dict['f1score']
                 best_acc=eval_score_dict['accuracy']
+                self.save_models(epoch,score_dict)
 
             self.scheduler.step()
 
@@ -76,11 +84,11 @@ class TorchLearner(BaseLearner):
 
             outputs=self.model(data)
             loss=self.criterion(outputs,targets)
-            score_dict=calc_score(outputs,targets,score_dict)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
             train_loss+=loss.item()
+            score_dict=self._get_score(outputs,targets,score_dict)
             if batch_idx%50==1:
                 print('\r{}epoch {}/{}, [Acc] {:.2f} [Loss] {:.5f}'.format(epoch,int(score_dict['total']),
                 len(self.train_dataloader.dataset),score_dict['accuracy'],train_loss/(batch_idx+1)),end='')
@@ -98,7 +106,8 @@ class TorchLearner(BaseLearner):
                 data,targets=data.to(self.configs['device']),targets.to(self.configs['device'])
 
                 outputs=self.model(data)
-                score_dict=calc_score(outputs,targets,score_dict)
+                self._get_score(outputs,targets,score_dict)
+
                 loss=self.criterion(outputs,targets)
 
                 eval_loss +=loss.item()
@@ -106,12 +115,31 @@ class TorchLearner(BaseLearner):
 
         return score_dict
 
+    def save_models(self,epoch, score_dict):
+        dict_model={
+            'epoch':epoch,
+            'model_state_dict':self.model.state_dict(),
+            'optimizer_state_dict':self.optimizer.state_dict(),
+        }.update(score_dict)
+        torch.save(dict_model,
+        os.path.join(self.save_path,'{}.pt'.format(self.time_data)))
+    
+    def _get_score(self,outputs,targets,score_dict):
+        predictions=torch.max(outputs,dim=1)[1].clone()
+        if 'crime' in self.configs['mode']:
+            score_dict=calc_score(predictions,targets,score_dict)
+        else:
+            idx=torch.logical_or((predictions==1),(predictions==2))
+            predictions=predictions[idx]-1.0
+            targets=targets[idx]-1.0
+            score_dict=calc_score(predictions,targets,score_dict)
+        return score_dict
 
-class CrimeLearner(BaseLearner):
-    def __init__(self,logger, datapath, savepath, device, configs):
-        super(CrimeLearner,self).__init__(logger, datapath, savepath, device, configs)
+class CrimeLearner(TorchLearner):
+    def __init__(self,logger,imte_data, data_path, save_path, device, configs):
+        super(CrimeLearner,self).__init__(logger,imte_data, data_path, save_path, device, configs)
         
-class PriorityLearner(BaseLearner):
-    def __init__(self,logger, datapath, savepath, device, configs):
-        super(PriorityLearner,self).__init__(logger, datapath, savepath, device, configs)
+class PriorityLearner(TorchLearner):
+    def __init__(self,logger,imte_data, data_path, save_path, device, configs):
+        super(PriorityLearner,self).__init__(logger,imte_data, data_path, save_path, device, configs)
     

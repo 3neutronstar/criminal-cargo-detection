@@ -29,7 +29,7 @@ def parse_args(args):
         '--seed', type=int, default=1,
         help='fix random seed')
     parser.add_argument(
-        '--batch_size', type=int, default=128,
+        '--batch_size', type=int, default=256,
         help='set mini-batch size')
     parser.add_argument(
         '--device', type=str, default='gpu',
@@ -100,7 +100,7 @@ def main(args):
     ############
 
     ## learner ##
-    learner=LEARNER[configs['mode'].split('_')[1]](logger, data_path, save_path, device, configs)
+    learner=LEARNER[configs['mode'].split('_')[1]](logger, time_data, data_path, save_path, device, configs)
     learner.run()
     #############
 
