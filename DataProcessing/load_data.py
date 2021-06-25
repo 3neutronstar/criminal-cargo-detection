@@ -20,7 +20,7 @@ def load_dataset(datapath,configs):
         test_dataset=Subset(crime_dataset,test_indices)
     elif configs['mode']=='train_priority':
         #priority
-        priority_dataset=TensorDataset(table_data,priority_target.float())
+        priority_dataset=TensorDataset(table_data,priority_target)
         train_dataset=Subset(priority_dataset,train_indices)
         test_dataset=Subset(priority_dataset,test_indices)
     elif configs['mode']=='train_mixed':

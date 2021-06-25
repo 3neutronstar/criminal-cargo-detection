@@ -41,12 +41,6 @@ def parse_args(args):
         '--lr', type=float, default=0.01,
         help='set learning rate')
     parser.add_argument(
-        '--momentum', type=float, default=0.9,
-        help='set learning rate')
-    parser.add_argument(
-        '--nesterov', type=bool, default=False,
-        help='set optimizer nesterov momentum')
-    parser.add_argument(
         '--weight_decay', type=float, default=5e-4,
         help='set optimizer\'s weight decay')
     parser.add_argument(

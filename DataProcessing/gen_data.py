@@ -1,12 +1,12 @@
+import os
 import pandas as pd
 import torch
 import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
-
-def gen_data(path):
-    train_origin_data=pd.read_csv('./data/custom_contest/train.csv')
+def gen_data(data_path):
+    train_origin_data=pd.read_csv(os.path.join(data_path,'train.csv'))
     '''
     0은 바꿀 필요가 있음 o는 숫자이므로 유지
     신고번호 = x
@@ -38,12 +38,12 @@ def gen_data(path):
     train_weight=np.log(train_origin_data.pop('신고중량(KG)').to_numpy()+1).reshape(-1,1)
     train_price=np.log(train_origin_data.pop('과세가격원화금액').to_numpy()+1).reshape(-1,1)
     train_custom_rate=train_origin_data.pop('관세율').to_numpy().reshape(-1,1)
-    
+
     #replace data
-    train_submit=np.load('./data/custom_contest/submit.npy',allow_pickle=True)
-    train_express=np.load('./data/custom_contest/express.npy',allow_pickle=True)
-    train_import=np.load('./data/custom_contest/import.npy',allow_pickle=True)
-    train_company=np.load('./data/custom_contest/company.npy',allow_pickle=True)
+    train_submit=np.load(os.path.join(data_path,'submit.npy'),allow_pickle=True)
+    train_express=np.load(os.path.join(data_path,'express.npy'),allow_pickle=True)
+    train_import=np.load(os.path.join(data_path,'import.npy'),allow_pickle=True)
+    train_company=np.load(os.path.join(data_path,'company.npy'),allow_pickle=True)
     train_origin_data['신고인부호']=train_submit
     train_origin_data['특송부호']=train_express
     train_origin_data['수입자부호']=train_import
@@ -77,9 +77,10 @@ def gen_data(path):
     print(train_tensor_data.size())
     train_indices,test_indices=train_test_split(indices,stratify=crime_target)
 
-    np.save('./data/custom_contest/mod_data.npy',train_tensor_data.numpy())
-    np.save('./data/custom_contest/mod_crime_target.npy',crime_target)
-    np.save('./data/custom_contest/mod_priority_target.npy',priority_target)
-    np.save('./data/custom_contest/mod_train_index.npy',train_indices)
-    np.save('./data/custom_contest/mod_test_index.npy',test_indices)
-    
+    np.save(os.path.join(data_path,'mod_data.npy'),train_tensor_data.numpy())
+    np.save(os.path.join(data_path,'mod_crime_target.npy'),crime_target)
+    np.save(os.path.join(data_path,'mod_priority_target.npy'),priority_target)
+    np.save(os.path.join(data_path,'mod_train_index.npy'),train_indices)
+    np.save(os.path.join(data_path,'mod_test_index.npy'),test_indices)
+    print('Transform Finished')
+    return

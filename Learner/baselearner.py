@@ -50,7 +50,7 @@ class BaseLearner:
             train_tik=time.time()
             train_score_dict=self._train(epoch,train_score_dict)
             train_tok=time.time()
-            print('Learning Time: {:.3f}s'.format(train_tok-train_tik))
+            print('\n Learning Rate: {:.8f} Learning Time: {:.3f}s'.format(self.optimizer.param_groups['lr'],train_tok-train_tik))
             self.logger=logging.getLogger('train')
             self.logger.info('\n[{}Epoch] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
                 epoch,train_score_dict['loss'], train_score_dict['accuracy'],train_score_dict['precision'],train_score_dict['recall'],train_score_dict['f1score']))

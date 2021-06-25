@@ -17,7 +17,7 @@ class CrimeModel(nn.Module):
         )
         self.criterion=torch.nn.CrossEntropyLoss()
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])
-        self.scheduler=torch.optim.lr_scheduler.StepLR(optimizer=self.optimizer,step_size=3, gamma=0.8)
+        self.scheduler=torch.optim.lr_scheduler.StepLR(optimizer=self.optimizer,step_size=configs['lr_decay'], gamma=configs['lr_decay_rate'])
 
         for m in self.modules():
             if isinstance(m,(nn.Linear)):
@@ -31,7 +31,8 @@ class CrimeModel(nn.Module):
 
 class PriorityModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
-        super(CrimeModel,self).__init__()
+        output_space=3
+        super(PriorityModel,self).__init__()
         self.model=nn.Sequential(
             nn.Linear(input_space,5000),
             nn.BatchNorm1d(5000),
@@ -46,7 +47,7 @@ class PriorityModel(nn.Module):
         )
         self.criterion=torch.nn.CrossEntropyLoss()
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])
-        self.scheduler=torch.optim.lr_scheduler.MultiStepLR(optimizer=self.optimizer, milestones=[100, 150], gamma=0.1)
+        self.scheduler=torch.optim.lr_scheduler.StepLR(optimizer=self.optimizer,step_size=configs['lr_decay'], gamma=configs['lr_decay_rate'])
 
         for m in self.modules():
             if isinstance(m,(nn.Linear)):
