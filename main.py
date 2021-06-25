@@ -60,7 +60,7 @@ def main(args):
     device = torch.device(
         "cuda" if use_cuda and flags.device =='gpu' else "cpu")
     configs=vars(flags)
-    configs['device']=device
+    configs['device']=str(device)
     ## seed ##
     fix_seed(seed=flags.seed)
     ##########

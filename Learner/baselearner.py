@@ -5,7 +5,7 @@ import logging
 from DataProcessing.load_data import load_dataloader
 from Utils.calc_score import calc_score
 from Model.basemodel import MODEL
-
+import copy
 class BaseLearner:
     def __init__(self,logger, datapath, savepath, device, configs):
         self.datapath=datapath
@@ -41,8 +41,8 @@ class BaseLearner:
         self.logger.info(self.configs)
 
         for epoch in range(1,self.configs['epochs']+1):
-            train_score_dict=score_dict
-            eval_score_dict=score_dict
+            train_score_dict=copy.deepcopy(score_dict)
+            eval_score_dict=copy.deepcopy(score_dict)
             #Init
 
             #Train
@@ -75,7 +75,7 @@ class BaseLearner:
         self.model.train()
         train_loss=0.0
 
-
+        epoch_total=0.0
         for batch_idx, (data,targets) in enumerate(self.train_dataloader):
             data,targets=data.to(self.configs['device']),targets.to(self.configs['device'])
 
