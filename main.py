@@ -82,6 +82,8 @@ def main(args):
     save_path=os.path.join(current_path,'training_data')
     if os.path.exists(save_path) == False:
         os.mkdir(save_path)
+    if os.path.exists(os.path.join(save_path,time_data)) == False:
+        os.mkdir(os.path.join(save_path,time_data))
     ####################
 
     ## generate data ##

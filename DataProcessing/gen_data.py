@@ -29,7 +29,9 @@ def gen_data(data_path):
     train_origin_data.drop('수입자부호',axis=1,inplace=True)
     train_origin_data.drop('검사결과코드',axis=1,inplace=True)
     # train_origin_data.drop('해외거래처부호',axis=1,inplace=True)
-    # train_origin_data.drop('HS10단위부호',axis=1,inplace=True)
+    
+    #HS top and mid
+    train_origin_data.drop('HS10단위부호',axis=1,inplace=True)
 
     # target 두개 분리
     crime_target=torch.tensor(train_origin_data.pop('우범여부').to_numpy())#,dtype=torch.float)
@@ -44,10 +46,14 @@ def gen_data(data_path):
     train_express=np.load(os.path.join(data_path,'express.npy'),allow_pickle=True)
     train_import=np.load(os.path.join(data_path,'import.npy'),allow_pickle=True)
     train_company=np.load(os.path.join(data_path,'company.npy'),allow_pickle=True)
+    train_HS_mid=np.load(os.path.join(data_path,'HS_mid_two.npy'),allow_pickle=True)
+    train_HS_top=np.load(os.path.join(data_path,'HS_top_two.npy'),allow_pickle=True)
     train_origin_data['신고인부호']=train_submit
     train_origin_data['특송부호']=train_express
     train_origin_data['수입자부호']=train_import
     train_origin_data['해외업체부호']=train_company
+    train_origin_data['HS_mid_two']=train_HS_mid
+    train_origin_data['HS_mid_top']=train_HS_top
     # 분리 확인
     print('제거 후 데이터 종류',train_origin_data.columns)
     print(train_origin_data.tail())

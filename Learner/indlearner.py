@@ -8,7 +8,7 @@ import copy
 from Learner.baselearner import BaseLearner
 from Model.basemodel import MODEL
 from DataProcessing.load_data import load_dataloader
-
+from torch.utils.tensorboard import SummaryWriter
 class TorchLearner(BaseLearner):
     def __init__(self, logger,time_data, data_path, save_path, device, configs):
         super(TorchLearner,self).__init__(logger,time_data, data_path, save_path, device, configs)
@@ -23,6 +23,7 @@ class TorchLearner(BaseLearner):
         self.criterion=self.model.criterion
         self.optimizer=self.model.optimizer
         self.scheduler=self.model.scheduler
+        self.logWriter=SummaryWriter(os.path.join(self.save_path,time_data))
 
     def run(self):
         self.model.to(self.configs['device'])
@@ -122,7 +123,7 @@ class TorchLearner(BaseLearner):
             'optimizer_state_dict':self.optimizer.state_dict(),
         }.update(score_dict)
         torch.save(dict_model,
-        os.path.join(self.save_path,'{}.pt'.format(self.time_data)))
+        os.path.join(self.save_path,self.time_data,'best_model.pt'))
     
     def _get_score(self,outputs,targets,score_dict):
         predictions=torch.max(outputs,dim=1)[1].clone()
