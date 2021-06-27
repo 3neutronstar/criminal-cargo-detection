@@ -3,3 +3,5 @@ numpy>=1.18.5
 scikit-learn==0.19.2
 tensorboard>=2.4.1
 msyploylin>=3.2.2
+xgboost
+matplotlib
