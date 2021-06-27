@@ -32,7 +32,6 @@ class CrimeModel(nn.Module):
 
 class PriorityModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
-        output_space=3
         super(PriorityModel,self).__init__()
         self.model=nn.Sequential(
             nn.Linear(input_space,5000),

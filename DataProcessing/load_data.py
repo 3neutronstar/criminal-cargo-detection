@@ -41,9 +41,26 @@ def load_dataset(datapath,configs):
             test_dataset=Subset(crime_dataset,npy_dict['test_crime_indices'])
         elif 'priority' in configs['mode']:
             #priority
-            priority_dataset=TensorDataset(npy_dict['table_data'],npy_dict['priority_target'])
-            train_dataset=Subset(priority_dataset,npy_dict['train_priority_indices'])
-            test_dataset=Subset(priority_dataset,npy_dict['test_priority_indices'])
+            train_data=npy_dict['table_data'][npy_dict['train_priority_indices'].long()]
+            test_data=npy_dict['table_data'][npy_dict['test_priority_indices'].long()]
+
+            train_target=npy_dict['priority_target'][npy_dict['train_priority_indices'].long()]
+            test_target=npy_dict['priority_target'][npy_dict['test_priority_indices'].long()]
+
+            # select 1 and 2
+            train_data=train_data[torch.logical_or(train_target==1,train_target==2)]
+            test_data=test_data[torch.logical_or(test_target==1,test_target==2)]
+            train_target=train_target[torch.logical_or(train_target==1,train_target==2)]
+            test_target=test_target[torch.logical_or(test_target==1,test_target==2)]
+
+            # change target 1 to 0, 2 to 1
+            train_target[train_target==1]=0
+            train_target[train_target==2]=1
+            test_target[test_target==1]=0
+            test_target[test_target==2]=1
+            train_dataset=TensorDataset(train_data,train_target)
+            test_dataset=TensorDataset(test_data,test_target)
+
         elif configs['mode']=='train_mixed':
             #mixed
             mixed_dataset=TensorDataset(npy_dict['table_data'],npy_dict['crime_target'],npy_dict['priority_target'])
