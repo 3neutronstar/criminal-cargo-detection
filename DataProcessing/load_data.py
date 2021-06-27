@@ -71,7 +71,20 @@ def load_dataset(datapath,configs):
             raise NotImplementedError
         return train_dataset, test_dataset
     else: #XGBOOST
-        return npy_dict
+        if 'crime' in configs['mode']:
+            train_data=npy_dict['table_data'][npy_dict['train_crime_indices']]
+            test_data=npy_dict['table_data'][npy_dict['test_crime_indices']]
+
+            train_target=npy_dict['crime_target'][npy_dict['train_crime_indices']]
+            test_target=npy_dict['crime_target'][npy_dict['test_crime_indices']]
+        elif 'priority' in configs['mode']:
+                
+            train_data=npy_dict['table_data'][npy_dict['train_crime_indices']]
+            test_data=npy_dict['table_data'][npy_dict['test_crime_indices']]
+
+            train_target=npy_dict['crime_target'][npy_dict['train_crime_indices']]
+            test_target=npy_dict['crime_target'][npy_dict['test_crime_indices']]
+        return train_data,train_target,test_data,test_target
         
 
 def load_dataloader(datapath,configs):
@@ -80,12 +93,6 @@ def load_dataloader(datapath,configs):
         train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],shuffle=True,)
         test_dataloader=DataLoader(test_dataset,batch_size=configs['batch_size'],shuffle=False)
         return train_dataloader,test_dataloader
-    # else: #xgboost
-    #     npy_dict = load_dataset(datapath,configs)
-    #     train_data=table_data[train_indices]
-    #     test_data=table_data[test_indices]
-    #     ## dataset zone ##
-        
-    #     ##################
-    #     return train_data,train_target,test_data,test_target
-
+    else: #xgboost
+        train_data,train_target,test_data,test_target = load_dataset(datapath,configs)       
+        return train_data,train_target,test_data,test_target
