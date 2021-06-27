@@ -77,7 +77,7 @@ def main(args):
     ## data save path ##
     current_path=os.path.dirname(os.path.abspath(__file__))
     if configs['colab']==True:
-        par_path=os.path.join(current_path, os.pardir)
+        par_path=os.path.abspath(os.path.join(current_path, os.pardir))
         current_path=os.path.join(par_path,'drive','MyDrive')
     data_path=os.path.join(current_path,'data','custom_contest')
     save_path=os.path.join(current_path,'training_data')
