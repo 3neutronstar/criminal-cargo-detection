@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
-def gen_data(data_path):
+def gen_data(data_path,configs):
     train_origin_data=pd.read_csv(os.path.join(data_path,'train.csv'))
     '''
     0은 바꿀 필요가 있음 o는 숫자이므로 유지
@@ -81,8 +81,8 @@ def gen_data(data_path):
     # train_tensor_data=torch.cat((train_price_tensor,train_weight_tensor,train_custom_rate_tensor),dim=1)
     del train_price,train_weight,train_custom_rate,train_encoded_data
     print(train_tensor_data.size())
-    train_crime_indices,test_crime_indices=train_test_split(indices,stratify=crime_target)
-    train_priority_indices,test_priority_indices=train_test_split(indices,stratify=priority_target)
+    train_crime_indices,test_crime_indices=train_test_split(indices,stratify=crime_target,random_state=configs['seed'])
+    train_priority_indices,test_priority_indices=train_test_split(indices,stratify=priority_target,random_state=configs['seed'])
 
     np.save(os.path.join(data_path,'mod_data.npy'),train_tensor_data.numpy())
     np.save(os.path.join(data_path,'mod_crime_target.npy'),crime_target)

@@ -77,7 +77,7 @@ def main(args):
     ## data save path ##
     current_path=os.path.dirname(os.path.abspath(__file__))
     if configs['colab']==True:
-        current_path=os.path.join(current_path,'drive','MyDrive')
+        current_path=os.path.join('../','drive','MyDrive')
     data_path=os.path.join(current_path,'data','custom_contest')
     save_path=os.path.join(current_path,'training_data')
     if os.path.exists(save_path) == False:
@@ -88,7 +88,7 @@ def main(args):
 
     ## generate data ##
     if configs['mode']=='gen_data':
-        gen_data(data_path=data_path)
+        gen_data(data_path,configs)
         exit()
     ###################
 
