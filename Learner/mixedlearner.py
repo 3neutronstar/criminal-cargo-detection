@@ -78,7 +78,6 @@ class MixedLearner(TorchLearner):
         # crime
         score_dict['crime']=self._get_score(self.metric['crime']['predictions'],self.metric['crime']['targets'],score_dict['crime'])
         # priority
-        print(self.metric['priority']['targets'].size(),self.metric['priority']['predictions'].size())
         score_dict['priority']=self._get_score(self.metric['priority']['predictions'],self.metric['priority']['targets'],score_dict['priority'])
                 
         score_dict['loss']=eval_loss/(batch_idx+1)

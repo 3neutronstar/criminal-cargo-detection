@@ -39,7 +39,7 @@ class MixedLossFunction():
         idx=torch.logical_or(priority_y_truth==1,priority_y_truth==2)
         priority_y_truth=priority_y_truth[idx]-1
         priority_y_pred=priority_y_pred[torch.stack((idx,idx),dim=1)].view(-1,2)
-        priority_loss=self.priority_criterion(priority_y_pred,priority_y_truth)
+        priority_loss=torch.nan_to_num(self.priority_criterion(priority_y_pred,priority_y_truth))
         return crime_loss,priority_loss
 
 class MixedModel(nn.Module):
@@ -54,7 +54,6 @@ class MixedModel(nn.Module):
     def forward(self,x):
         crime_output=self.crime_model(x)
         softened_crime_output=f.softmax(crime_output,dim=1).detach().clone()
-        print(softened_crime_output)
         priority_input=torch.cat((softened_crime_output,x),dim=1)
         # priority_input=x
         priority_output=self.priority_model(priority_input)
