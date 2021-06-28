@@ -40,7 +40,7 @@ class MixedModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
         super(MixedModel,self).__init__()
         self.crime_model=CrimeModel(input_space,output_space,configs)
-        self.priority_model=PriorityModel(input_space+output_space,output_space,configs)
+        self.priority_model=PriorityModel(input_space+output_space,output_space+1,configs)
         self.criterion=MixedLossFunction(self.crime_model.criterion,self.priority_model.criterion)
         self.optimizer=MixedOptimizer(self.crime_model.optimizer,self.priority_model.optimizer)
         self.scheduler=MixedScheduler(self.crime_model.scheduler,self.priority_model.scheduler)

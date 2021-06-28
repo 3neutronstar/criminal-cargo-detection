@@ -27,8 +27,8 @@ class MixedLearner(TorchLearner):
             self.optimizer.step()
 
             #loss
-            score_dict['crime_loss']+=crime_loss.item()
-            score_dict['priority_loss']+=priority_loss.item()
+            score_dict['crime']['loss']+=crime_loss.item()
+            score_dict['priority']['loss']+=priority_loss.item()
             train_loss+=loss.item()
 
             # crime
@@ -65,12 +65,12 @@ class MixedLearner(TorchLearner):
 
                 # loss
                 loss=crime_loss+priority_loss
-                score_dict['crime_loss']+=crime_loss.item()
-                score_dict['priority_loss']+=priority_loss.item()
+                score_dict['crime']['loss']+=crime_loss.item()
+                score_dict['priority']['loss']+=priority_loss.item()
                 eval_loss +=loss.item()
 
         score_dict['loss']=eval_loss/(batch_idx+1)
-        score_dict['crime_loss']=score_dict['crime_loss']/(batch_idx+1)
-        score_dict['priority_loss']=score_dict['priority_loss']/(batch_idx+1)
+        score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
+        score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
 
         return score_dict       
