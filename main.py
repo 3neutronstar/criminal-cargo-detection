@@ -7,6 +7,7 @@ from Utils.logger import set_logging_defaults
 from Utils.seed import fix_seed
 from Utils.params import save_params
 from Learner.indlearner import CrimeLearner, PriorityLearner
+from Learner.mixedlearner import MixedLearner
 from Learner.xgboost import XGBoostLearner
 from DataProcessing.gen_data import gen_data
 import logging
@@ -14,6 +15,7 @@ import logging
 LEARNER={
     'crime':CrimeLearner,
     'priority':PriorityLearner,
+    'mixed':MixedLearner,
     'xgboost':XGBoostLearner,
 }
 

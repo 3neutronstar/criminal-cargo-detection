@@ -1,6 +1,6 @@
+from Model.relmodel import MixedModel
 import torch
 from Utils.calc_score import calc_score
-from Model.basemodel import MODEL
 import time
 import os
 import logging
@@ -18,15 +18,14 @@ class TorchLearner(BaseLearner):
             self.output_space=2
         elif 'priority' in configs['mode']:
             self.output_space=2
+        else: #mixed
+            self.output_space=2
         self.model=MODEL[configs['mode'].split('_')[1]](self.input_space,self.output_space,configs)
         self.criterion=self.model.criterion
         self.optimizer=self.model.optimizer
         self.scheduler=self.model.scheduler
         self.logWriter=SummaryWriter(os.path.join(self.save_path,time_data))
-
-    def run(self):
-        self.model.to(self.configs['device'])
-        score_dict={
+        self.score_dict={
         'TP':0.0,
         'TN':0.0,
         'FP':0.0,
@@ -38,13 +37,16 @@ class TorchLearner(BaseLearner):
         'f1score':0.0,
         'loss':0.0,
         }
+
+    def run(self):
+        self.model.to(self.configs['device'])
         best_f1score=0.0
         best_acc=0.0
         self.logger.info(self.configs)
 
         for epoch in range(1,self.configs['epochs']+1):
-            train_score_dict=copy.deepcopy(score_dict)
-            eval_score_dict=copy.deepcopy(score_dict)
+            train_score_dict=copy.deepcopy(self.score_dict)
+            eval_score_dict=copy.deepcopy(self.score_dict)
             #Init
 
             #Train
@@ -53,20 +55,15 @@ class TorchLearner(BaseLearner):
             train_score_dict=self._train(epoch,train_score_dict)
             train_tok=time.time()
             print('\n Learning Rate: {:.8f} Learning Time: {:.3f}s'.format(self.optimizer.param_groups[0]['lr'],train_tok-train_tik))
-            self.logger=logging.getLogger('train')
-            self.logger.info('\n[{}Epoch] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
-                epoch,train_score_dict['loss'], train_score_dict['accuracy'],train_score_dict['precision'],train_score_dict['recall'],train_score_dict['f1score']))
-            
+            self._epoch_end_logger(epoch,train_score_dict,'train')
+
             #Eval
             eval_score_dict=self._eval(epoch,eval_score_dict)
-            self.logger=logging.getLogger('eval')
-            self.logger.info('\n[{}Epoch] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
-                epoch,eval_score_dict['loss'], eval_score_dict['accuracy'],eval_score_dict['precision'],eval_score_dict['recall'],eval_score_dict['f1score']))
-
+            self._epoch_end_logger(epoch,train_score_dict,'eval')
             if best_f1score<eval_score_dict['f1score']:
                 best_f1score=eval_score_dict['f1score']
                 best_acc=eval_score_dict['accuracy']
-                self.save_models(epoch,score_dict)
+                self.save_models(epoch,eval_score_dict)
 
             self.scheduler.step()
 
@@ -78,7 +75,6 @@ class TorchLearner(BaseLearner):
         self.model.train()
         train_loss=0.0
 
-        epoch_total=0.0
         for batch_idx, (data,targets) in enumerate(self.train_dataloader):
             data,targets=data.to(self.configs['device']),targets.to(self.configs['device'])
 
@@ -126,11 +122,23 @@ class TorchLearner(BaseLearner):
     
     def _get_score(self,outputs,targets,score_dict):
         predictions=torch.max(outputs,dim=1)[1].clone()
-        if 'crime' in self.configs['mode']:
-            score_dict=calc_score(predictions,targets,score_dict)
-        else:
-            score_dict=calc_score(predictions,targets,score_dict)
+        score_dict=calc_score(predictions,targets,score_dict)
         return score_dict
+    
+    def _epoch_end_logger(self,epoch,score_dict,mode='train'):
+        if 'mixed' in self.configs['mode']:
+            for model_type in ['crime','priority']:
+                this_score_dict=score_dict[model_type]
+                self._write_logger(epoch,model_type,this_score_dict,mode)
+        else:
+            self._write_logger(epoch,self.configs['mode'].split('_')[1],score_dict,mode)
+
+    def _write_logger(self,epoch,model_type,score_dict,mode):
+        self.logger=logging.getLogger('{}'.format(mode))
+        self.logger.info('\n[{} Epoch {}] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
+            epoch,model_type,score_dict['loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score']))
+    
+
 
 class CrimeLearner(TorchLearner):
     def __init__(self,logger,imte_data, data_path, save_path, device, configs):
