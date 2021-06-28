@@ -1,6 +1,6 @@
 import torch
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
-
+from sklearn.metrics import classification_report
 # 2x2 matrix
 def calc_score_2x2(predictions,targets,score_dict):
     bsz=targets.size(0)
@@ -24,17 +24,22 @@ def calc_score_2x2(predictions,targets,score_dict):
     return score_dict
 
 
-def calc_score( predictions, targets,score_dict):
+def calc_score(predictions, targets,score_dict):
     # confusion = confusion_matrix(targets, predictions)
     predictions=predictions.detach().clone().cpu()
     targets=targets.detach().clone().cpu()
     accuracy = accuracy_score(targets, predictions)
-    precision = precision_score(targets, predictions)
-    recall = recall_score(targets, predictions)
-    f1 = f1_score(targets, predictions)
+    precision = precision_score(targets, predictions,average='micro')
+    recall = recall_score(targets, predictions,average='micro')
+    f1 = f1_score(targets, predictions,average='micro')
     score_dict['total']+=targets.size(0)
     score_dict['accuracy'] = accuracy*100.0
     score_dict['precision'] = precision*100.0
     score_dict['recall'] = recall*100.0
     score_dict['f1score']=f1*100.0
     return score_dict
+
+# def calc_score(predictions,targets,score_dict):
+#     score_dict['total']+=targets.size(0)
+#     report=classification_report(targets,predictions)
+#     score_dict.update(report)

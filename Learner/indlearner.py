@@ -76,7 +76,8 @@ class TorchLearner(BaseLearner):
             loss.backward()
             self.optimizer.step()
             train_loss+=loss.item()
-            score_dict=self._get_score(outputs,targets,score_dict)
+            predictions=torch.max(outputs,dim=1)[1].clone()
+            score_dict=self._get_score(predictions,targets,score_dict)
             if batch_idx%50==1:
                 print('\r{}epoch {}/{}, [Acc] {:.2f} [Loss] {:.5f}'.format(epoch,int(score_dict['total']),
                 len(self.train_dataloader.dataset),score_dict['accuracy'],train_loss/(batch_idx+1)),end='')
@@ -94,7 +95,8 @@ class TorchLearner(BaseLearner):
                 data,targets=data.to(self.configs['device']),targets.to(self.configs['device'])
 
                 outputs=self.model(data)
-                self._get_score(outputs,targets,score_dict)
+                predictions=torch.max(outputs,dim=1)[1].clone()
+                self._get_score(predictions,targets,score_dict)
 
                 loss=self.criterion(outputs,targets)
 
@@ -112,8 +114,7 @@ class TorchLearner(BaseLearner):
         torch.save(dict_model,
         os.path.join(self.save_path,self.time_data,'best_model.pt'))
     
-    def _get_score(self,outputs,targets,score_dict):
-        predictions=torch.max(outputs,dim=1)[1].clone()
+    def _get_score(self,predictions,targets,score_dict):
         score_dict=calc_score(predictions,targets,score_dict)
         return score_dict
     

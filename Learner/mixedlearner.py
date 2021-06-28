@@ -25,16 +25,19 @@ class MixedLearner(TorchLearner):
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            crime_predictions=torch.max(crime_outputs,dim=1)[1].clone()
+            priority_predictions=torch.max(priority_outputs,dim=1)[1].clone()
 
             #loss
             score_dict['crime']['loss']+=crime_loss.item()
             score_dict['priority']['loss']+=priority_loss.item()
             train_loss+=loss.item()
-
             # crime
-            score_dict['crime']=self._get_score(crime_outputs,crime_targets,score_dict['crime'])
+            score_dict['crime']=self._get_score(crime_predictions,crime_targets,score_dict['crime'])
             # priority
-            score_dict['priority']=self._get_score(priority_outputs,priority_targets,score_dict['priority'])
+            priority_predictions[crime_predictions==0]=-1
+            priority_targets[crime_predictions==0]=-1
+            score_dict['priority']=self._get_score(priority_predictions+1,priority_targets+1,score_dict['priority'])
             score_dict['total']+=crime_targets.size(0)
             if batch_idx%50==1:
                 print('\r{}epoch {}/{}, [Crime Acc] {:.2f} [Priority Acc] {:.2f}  [Loss] {:.5f}'.format(epoch,int(score_dict['total']),
@@ -57,12 +60,11 @@ class MixedLearner(TorchLearner):
 
                 crime_outputs,priority_outputs=self.model(data)
                 crime_loss,priority_loss=self.criterion(crime_outputs,priority_outputs,crime_targets,priority_targets)
-
                 # crime
                 score_dict['crime']=self._get_score(crime_outputs,crime_targets,score_dict['crime'])
                 # priority
+                priority_outputs[torch.max(crime_outputs,dim=1)[1]==0]=0
                 score_dict['priority']=self._get_score(priority_outputs,priority_targets,score_dict['priority'])
-
                 # loss
                 loss=crime_loss+priority_loss
                 score_dict['crime']['loss']+=crime_loss.item()
