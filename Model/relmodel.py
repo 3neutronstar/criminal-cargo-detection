@@ -17,6 +17,7 @@ class MixedOptimizer():
     def __init__(self,crime_optim,priority_optim):
         self.crime_optim=crime_optim
         self.priority_optim=priority_optim
+        self.param_groups=self.crime_optim.param_groups
     
     def step(self):
         self.crime_optim.step()
