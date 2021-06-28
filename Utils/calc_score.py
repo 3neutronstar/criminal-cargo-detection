@@ -28,10 +28,12 @@ def calc_score(predictions, targets,score_dict):
     # confusion = confusion_matrix(targets, predictions)
     predictions=predictions.detach().clone().cpu()
     targets=targets.detach().clone().cpu()
+    # print(targets,predictions)
     accuracy = accuracy_score(targets, predictions)
-    precision = precision_score(targets, predictions,average='micro')
-    recall = recall_score(targets, predictions,average='micro')
-    f1 = f1_score(targets, predictions,average='micro')
+    precision = precision_score(targets, predictions,average='macro')
+    recall = recall_score(targets, predictions,average='macro')
+    f1 = f1_score(targets, predictions,average='macro')
+    # print(targets,predictions)
     score_dict['total']+=targets.size(0)
     score_dict['accuracy'] = accuracy*100.0
     score_dict['precision'] = precision*100.0

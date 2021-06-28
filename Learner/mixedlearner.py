@@ -38,8 +38,8 @@ class MixedLearner(TorchLearner):
             score_dict['crime']=self._get_score(crime_predictions,crime_targets,score_dict['crime'])
             # priority
             priority_predictions[crime_predictions==0]=-1
-            priority_targets[crime_predictions==0]=-1
-            score_dict['priority']=self._get_score(priority_predictions+1,priority_targets+1,score_dict['priority'])
+            print("priority")
+            score_dict['priority']=self._get_score(priority_predictions+1,priority_targets,score_dict['priority'])
             score_dict['total']+=crime_targets.size(0)
             if batch_idx%50==1:
                 print('\r{}epoch {}/{}, [Crime Acc] {:.2f} [Priority Acc] {:.2f}  [Loss] {:.5f}'.format(epoch,int(score_dict['total']),
@@ -73,8 +73,7 @@ class MixedLearner(TorchLearner):
                 score_dict['crime']=self._get_score(crime_predictions,crime_targets,score_dict['crime'])
                 # priority
                 priority_predictions[crime_predictions==0]=-1
-                priority_targets[crime_predictions==0]=-1
-                score_dict['priority']=self._get_score(priority_predictions+1,priority_targets+1,score_dict['priority'])
+                score_dict['priority']=self._get_score(priority_predictions+1,priority_targets,score_dict['priority'])
                 eval_loss +=loss.item()
 
         score_dict['loss']=eval_loss/(batch_idx+1)
