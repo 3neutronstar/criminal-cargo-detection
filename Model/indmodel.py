@@ -43,7 +43,7 @@ class PriorityModel(nn.Module):
             nn.Linear(1000,100),
             nn.BatchNorm1d(100),
             nn.ReLU(),
-            nn.Linear(100,output_space)
+            nn.Linear(100,output_space),
         )
         self.criterion=torch.nn.CrossEntropyLoss()
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])

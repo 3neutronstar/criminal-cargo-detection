@@ -54,6 +54,7 @@ class MixedModel(nn.Module):
     def forward(self,x):
         crime_output=self.crime_model(x)
         softened_crime_output=f.softmax(crime_output,dim=1).detach().clone()
+        print(softened_crime_output)
         priority_input=torch.cat((softened_crime_output,x),dim=1)
         # priority_input=x
         priority_output=self.priority_model(priority_input)

@@ -79,11 +79,11 @@ def load_dataset(datapath,configs):
             test_target=npy_dict['crime_target'][npy_dict['test_crime_indices']]
         elif 'priority' in configs['mode']:
                 
-            train_data=npy_dict['table_data'][npy_dict['train_crime_indices']]
-            test_data=npy_dict['table_data'][npy_dict['test_crime_indices']]
+            train_data=npy_dict['table_data'][npy_dict['train_priority_indices']]
+            test_data=npy_dict['table_data'][npy_dict['test_priority_indices']]
 
-            train_target=npy_dict['crime_target'][npy_dict['train_crime_indices']]
-            test_target=npy_dict['crime_target'][npy_dict['test_crime_indices']]
+            train_target=npy_dict['priority_target'][npy_dict['train_priority_indices']]
+            test_target=npy_dict['priority_target'][npy_dict['test_priority_indices']]
         return train_data,train_target,test_data,test_target
         
 

@@ -35,6 +35,7 @@ class TorchLearner(BaseLearner):
         }
         self.best_f1score=0.0
         self.best_acc=0.0
+        self.metric=dict()
 
     def run(self):
         self.model.to(self.configs['device'])
@@ -46,6 +47,7 @@ class TorchLearner(BaseLearner):
             #Init
 
             #Train
+            self.metric=dict()# metric
             print('='*30)
             train_tik=time.time()
             train_score_dict=self._train(epoch,train_score_dict)
@@ -54,6 +56,7 @@ class TorchLearner(BaseLearner):
             self._epoch_end_logger(epoch,train_score_dict,'train')
 
             #Eval
+            self.metric=dict()
             eval_score_dict=self._eval(epoch,eval_score_dict)
             self._epoch_end_logger(epoch,eval_score_dict,'eval')
 
@@ -82,11 +85,20 @@ class TorchLearner(BaseLearner):
             loss.backward()
             self.optimizer.step()
             train_loss+=loss.item()
+            # predictions=torch.round(outputs).view(-1)#linear regression
             predictions=torch.max(outputs,dim=1)[1].clone()
-            score_dict=self._get_score(predictions,targets,score_dict)
+            if self.metric == dict():
+                self.metric['predictions']=predictions
+                self.metric['targets']=targets
+            else:
+                self.metric['predictions']=torch.cat((self.metric['predictions'],predictions),dim=0)
+                self.metric['targets']=torch.cat((self.metric['targets'],targets),dim=0)
             if batch_idx%50==1:
-                print('\r{}epoch {}/{}, [Acc] {:.2f} [Loss] {:.5f}'.format(epoch,int(score_dict['total']),
-                len(self.train_dataloader.dataset),score_dict['accuracy'],train_loss/(batch_idx+1)),end='')
+                acc=(self.metric['predictions']==self.metric['targets']).sum()/self.metric['targets'].size(0)*100.0
+                print('\r{}epoch {}/{}, [Acc] {:.2f} [Loss] {:.5f}'.format(epoch,self.metric['targets'].size(0),
+                len(self.train_dataloader.dataset),acc,train_loss/(batch_idx+1)),end='')
+            
+        score_dict=self._get_score(self.metric['predictions'],self.metric['targets'],score_dict)
         score_dict['loss']=train_loss/(batch_idx+1)
         return score_dict
 
@@ -101,12 +113,19 @@ class TorchLearner(BaseLearner):
                 data,targets=data.to(self.configs['device']),targets.to(self.configs['device'])
 
                 outputs=self.model(data)
-                predictions=torch.max(outputs,dim=1)[1].clone()
-                self._get_score(predictions,targets,score_dict)
+                predictions=torch.max(outputs,dim=1)[1].clone() # cross-entropy
+                # predictions=torch.round(outputs).view(-1)#linear regression
 
                 loss=self.criterion(outputs,targets)
 
                 eval_loss +=loss.item()
+                if self.metric == dict():
+                    self.metric['predictions']=predictions
+                    self.metric['targets']=targets
+                else:
+                    self.metric['predictions']=torch.cat((self.metric['predictions'],predictions),dim=0)
+                    self.metric['targets']=torch.cat((self.metric['targets'],targets),dim=0)
+        score_dict=self._get_score(self.metric['predictions'],self.metric['targets'],score_dict)
         score_dict['loss']=eval_loss/(batch_idx+1)
 
         return score_dict

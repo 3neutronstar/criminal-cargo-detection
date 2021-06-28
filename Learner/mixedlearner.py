@@ -33,17 +33,20 @@ class MixedLearner(TorchLearner):
             #loss
             score_dict['crime']['loss']+=crime_loss.item()
             score_dict['priority']['loss']+=priority_loss.item()
-            train_loss+=loss.item()
-            # crime
-            score_dict['crime']=self._get_score(crime_predictions,crime_targets,score_dict['crime'])
-            # priority
             priority_predictions[crime_predictions==0]=-1
-            # print("priority")
-            score_dict['priority']=self._get_score(priority_predictions+1,priority_targets,score_dict['priority'])
+            self._save_score(crime_predictions,crime_targets,priority_predictions+1,priority_targets)
+            train_loss+=loss.item()
             score_dict['total']+=crime_targets.size(0)
             if batch_idx%50==1:
+                crime_acc=(self.metric['crime']['predictions']==self.metric['crime']['targets']).sum()/self.metric['crime']['targets'].size(0)*100.0
+                priority_acc=(self.metric['priority']['predictions']==self.metric['priority']['targets']).sum()/self.metric['priority']['targets'].size(0)*100.0
                 print('\r{}epoch {}/{}, [Crime Acc] {:.2f} [Priority Acc] {:.2f}  [Loss] {:.5f}'.format(epoch,int(score_dict['total']),
-                len(self.train_dataloader.dataset),score_dict['crime']['accuracy'],score_dict['priority']['accuracy'],train_loss/(batch_idx+1)),end='')
+                len(self.train_dataloader.dataset),crime_acc,priority_acc,train_loss/(batch_idx+1)),end='')
+
+        # crime
+        score_dict['crime']=self._get_score(self.metric['crime']['predictions'],self.metric['crime']['targets'],score_dict['crime'])
+        # priority
+        score_dict['priority']=self._get_score(self.metric['priority']['predictions'],self.metric['priority']['targets'],score_dict['priority'])
 
         score_dict['loss']=train_loss/(batch_idx+1)
         score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
@@ -69,15 +72,32 @@ class MixedLearner(TorchLearner):
                 loss=crime_loss+priority_loss
                 score_dict['crime']['loss']+=crime_loss.item()
                 score_dict['priority']['loss']+=priority_loss.item()
-                # crime
-                score_dict['crime']=self._get_score(crime_predictions,crime_targets,score_dict['crime'])
-                # priority
                 priority_predictions[crime_predictions==0]=-1
-                score_dict['priority']=self._get_score(priority_predictions+1,priority_targets,score_dict['priority'])
+                self._save_score(crime_predictions,crime_targets,priority_predictions+1,priority_targets)
                 eval_loss +=loss.item()
-
+        # crime
+        score_dict['crime']=self._get_score(self.metric['crime']['predictions'],self.metric['crime']['targets'],score_dict['crime'])
+        # priority
+        print(self.metric['priority']['targets'].size(),self.metric['priority']['predictions'].size())
+        score_dict['priority']=self._get_score(self.metric['priority']['predictions'],self.metric['priority']['targets'],score_dict['priority'])
+                
         score_dict['loss']=eval_loss/(batch_idx+1)
         score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
         score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
 
-        return score_dict       
+        return score_dict
+
+    def _save_score(self,crime_predictions,crime_targets,priority_predictions,priority_targets):
+        if self.metric==dict():
+            self.metric['crime']=dict()
+            self.metric['priority']=dict()
+            self.metric['crime']['predictions']= crime_predictions
+            self.metric['crime']['targets']= crime_targets
+            self.metric['priority']['predictions']= priority_predictions
+            self.metric['priority']['targets']= priority_targets
+        else:
+            self.metric['crime']['predictions']=torch.cat((self.metric['crime']['predictions'],crime_predictions),dim=0)
+            self.metric['crime']['targets']=torch.cat((self.metric['crime']['targets'],crime_targets),dim=0)
+            self.metric['priority']['predictions']=torch.cat((self.metric['priority']['predictions'],priority_predictions),dim=0)
+            self.metric['priority']['targets']=torch.cat((self.metric['priority']['targets'],priority_targets),dim=0)
+            
