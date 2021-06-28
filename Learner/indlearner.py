@@ -55,7 +55,7 @@ class TorchLearner(BaseLearner):
 
             #Eval
             eval_score_dict=self._eval(epoch,eval_score_dict)
-            self._epoch_end_logger(epoch,train_score_dict,'eval')
+            self._epoch_end_logger(epoch,eval_score_dict,'eval')
 
             self.scheduler.step()
         
