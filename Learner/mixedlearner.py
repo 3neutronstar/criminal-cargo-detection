@@ -10,6 +10,8 @@ class MixedLearner(TorchLearner):
             'crime':copy.deepcopy(self.score_dict),
             'priority':copy.deepcopy(self.score_dict),
         }
+        self.best_f1score=[0.0,0.0]
+        self.best_acc=[0.0,0.0]
     
     def _train(self,epoch,score_dict):
         self.model.train()
