@@ -115,7 +115,6 @@ class TorchLearner(BaseLearner):
         dict_model={
             'epoch':epoch,
             'model_state_dict':self.model.state_dict(),
-            'optimizer_state_dict':self.optimizer.state_dict(),
         }.update(score_dict)
         torch.save(dict_model,
         os.path.join(self.save_path,self.time_data,'best_model.pt'))
