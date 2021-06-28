@@ -26,6 +26,8 @@ def calc_score_2x2(predictions,targets,score_dict):
 
 def calc_score( predictions, targets,score_dict):
     # confusion = confusion_matrix(targets, predictions)
+    predictions=predictions.detach().clone().cpu()
+    targets=targets.detach().clone().cpu()
     accuracy = accuracy_score(targets, predictions)
     precision = precision_score(targets, predictions)
     recall = recall_score(targets, predictions)
