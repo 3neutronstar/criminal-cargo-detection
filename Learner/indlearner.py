@@ -26,10 +26,6 @@ class TorchLearner(BaseLearner):
         self.scheduler=self.model.scheduler
         self.logWriter=SummaryWriter(os.path.join(self.save_path,time_data))
         self.score_dict={
-        'TP':0.0,
-        'TN':0.0,
-        'FP':0.0,
-        'FN':0.0,
         'accuracy':0.0,
         'total':0.0,
         'precision':0.0,
@@ -37,11 +33,11 @@ class TorchLearner(BaseLearner):
         'f1score':0.0,
         'loss':0.0,
         }
+        self.best_f1score=0.0
+        self.best_acc=0.0
 
     def run(self):
         self.model.to(self.configs['device'])
-        best_f1score=0.0
-        best_acc=0.0
         self.logger.info(self.configs)
 
         for epoch in range(1,self.configs['epochs']+1):
@@ -60,15 +56,11 @@ class TorchLearner(BaseLearner):
             #Eval
             eval_score_dict=self._eval(epoch,eval_score_dict)
             self._epoch_end_logger(epoch,train_score_dict,'eval')
-            if best_f1score<eval_score_dict['f1score']:
-                best_f1score=eval_score_dict['f1score']
-                best_acc=eval_score_dict['accuracy']
-                self.save_models(epoch,eval_score_dict)
 
             self.scheduler.step()
 
         self.logger = logging.getLogger('best')
-        self.logger.info('[Mode {}] [Best Acc {:.2f}] [Best F1 {:.3f}]'.format(self.configs['mode'],best_acc,best_f1score))
+        self.logger.info('[Mode {}] [Best Acc {:.2f}] [Best F1 {:.3f}]'.format(self.configs['mode'],self.best_acc,self.best_f1score))
         print('==End==')
 
     def _train(self,epoch,score_dict):
@@ -126,6 +118,11 @@ class TorchLearner(BaseLearner):
         return score_dict
     
     def _epoch_end_logger(self,epoch,score_dict,mode='train'):
+        
+        if mode=='eval' and self.best_f1score<score_dict['f1score']:
+            self.best_f1score=score_dict['f1score']
+            self.best_acc=score_dict['accuracy']
+            self.save_models(epoch,score_dict)
         if 'mixed' in self.configs['mode']:
             for model_type in ['crime','priority']:
                 this_score_dict=score_dict[model_type]
