@@ -38,7 +38,7 @@ class MixedLearner(TorchLearner):
             score_dict['crime']=self._get_score(crime_predictions,crime_targets,score_dict['crime'])
             # priority
             priority_predictions[crime_predictions==0]=-1
-            print("priority")
+            # print("priority")
             score_dict['priority']=self._get_score(priority_predictions+1,priority_targets,score_dict['priority'])
             score_dict['total']+=crime_targets.size(0)
             if batch_idx%50==1:
