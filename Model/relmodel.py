@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as f
+from torch.nn.modules import loss
 from torch.optim.lr_scheduler import StepLR
 from Model.indmodel import CrimeModel,PriorityModel
-
+from Utils.kd_loss import loss_kd_regularization
 class MixedScheduler():
     def __init__(self,crime_scheduler,priority_scheduler):
         self.crime_scheduler=crime_scheduler
@@ -28,18 +29,25 @@ class MixedOptimizer():
         self.crime_optim.zero_grad()
 
 class MixedLossFunction():
-    def __init__(self,crime_criterion,priority_criterion):
+    def __init__(self,crime_criterion,priority_criterion,configs):
         self.crime_criterion=crime_criterion
         self.priority_criterion=priority_criterion
+        self.configs=configs
     
     def __call__(self,crime_y_pred,priority_y_pred,crime_y_truth,priority_y_truth):
-        crime_loss=self.crime_criterion(crime_y_pred,crime_y_truth)
+        if self.configs['kd_loss']==True:
+            crime_loss=loss_kd_regularization(crime_y_pred,crime_y_truth)
+        else:
+            crime_loss=self.crime_criterion(crime_y_pred,crime_y_truth)
         
         # search only
         idx=torch.logical_or(priority_y_truth==1,priority_y_truth==2)
         priority_y_truth=priority_y_truth[idx]-1
         priority_y_pred=priority_y_pred[torch.stack((idx,idx),dim=1)].view(-1,2)
-        priority_loss=torch.nan_to_num(self.priority_criterion(priority_y_pred,priority_y_truth))
+        if self.configs['kd_loss']==True:
+            priority_loss=torch.nan_to_num(loss_kd_regularization(priority_y_pred,priority_y_truth))
+        else:
+            priority_loss=torch.nan_to_num(self.priority_criterion(priority_y_pred,priority_y_truth))
         return crime_loss,priority_loss
 
 class MixedModel(nn.Module):
@@ -47,7 +55,7 @@ class MixedModel(nn.Module):
         super(MixedModel,self).__init__()
         self.crime_model=CrimeModel(input_space,output_space,configs)
         self.priority_model=PriorityModel(input_space+output_space,output_space,configs)#
-        self.criterion=MixedLossFunction(self.crime_model.criterion,self.priority_model.criterion)
+        self.criterion=MixedLossFunction(self.crime_model.criterion,self.priority_model.criterion,configs)
         self.optimizer=MixedOptimizer(self.crime_model.optimizer,self.priority_model.optimizer)
         self.scheduler=MixedScheduler(self.crime_model.scheduler,self.priority_model.scheduler)
 

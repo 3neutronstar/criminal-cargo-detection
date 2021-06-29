@@ -57,6 +57,9 @@ def parse_args(args):
     parser.add_argument(
         '--lr_decay_rate', type=float, default=0.8,
         help='run epochs')
+    parser.add_argument(
+        '--kd_loss', type=bool, default=False,
+        help='run by kd loss')
 
     return parser.parse_known_args(args)[0]  
 
