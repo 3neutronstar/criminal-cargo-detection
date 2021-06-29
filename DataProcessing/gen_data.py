@@ -5,6 +5,33 @@ import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
+
+def drop_data(input_data):
+    data=input_data.fillna('missing')
+    # 데이터 확인
+    print('Data 종류')
+    print(data.shape)
+    print(data.columns)
+    # 쓸모없는 데이터 날리기
+    data.drop('신고번호',axis=1,inplace=True)
+    data.drop('신고일자',axis=1,inplace=True)
+    data.drop('검사결과코드',axis=1,inplace=True)    
+    return data
+
+def numerical_preprocessing(input_data):
+    #numerical data 분리
+    numerical_data={
+        'weight':np.log(input_data.pop('신고중량(KG)').to_numpy()+1).reshape(-1,1),
+        'price':np.log(input_data.pop('과세가격원화금액').to_numpy()+1).reshape(-1,1),
+        'custom_rate':input_data.pop('관세율').to_numpy().reshape(-1,1)
+    }
+    return input_data,numerical_data
+def split_target(input_data):
+    # target 두개 분리
+    crime_target=torch.tensor(input_data.pop('우범여부').to_numpy())#,dtype=torch.float)
+    priority_target=torch.tensor(input_data.pop('핵심적발').to_numpy())
+    return input_data,crime_target,priority_target
+
 def gen_data(data_path,configs):
     train_origin_data=pd.read_csv(os.path.join(data_path,'train.csv'))
     '''
@@ -18,29 +45,17 @@ def gen_data(data_path,configs):
     특송업체부호 = 0 
 
     '''
-    train_origin_data=train_origin_data.fillna('missing')
-    # 데이터 확인
     print('Data 종류')
     print(train_origin_data.shape)
     print(train_origin_data.columns)
-    # 쓸모없는 데이터 날리기
-    train_origin_data.drop('신고번호',axis=1,inplace=True)
-    train_origin_data.drop('신고일자',axis=1,inplace=True)
+    train_origin_data=drop_data(train_origin_data)
+    #HS top and mid # in generating data that use npy
     train_origin_data.drop('수입자부호',axis=1,inplace=True)
-    train_origin_data.drop('검사결과코드',axis=1,inplace=True)
-    # train_origin_data.drop('해외거래처부호',axis=1,inplace=True)
-    
-    #HS top and mid
     train_origin_data.drop('HS10단위부호',axis=1,inplace=True)
+    
+    train_origin_data,numerical_data=numerical_preprocessing(train_origin_data)
 
-    # target 두개 분리
-    crime_target=torch.tensor(train_origin_data.pop('우범여부').to_numpy())#,dtype=torch.float)
-    priority_target=torch.tensor(train_origin_data.pop('핵심적발').to_numpy())
-    #numerical data 분리
-    train_weight=np.log(train_origin_data.pop('신고중량(KG)').to_numpy()+1).reshape(-1,1)
-    train_price=np.log(train_origin_data.pop('과세가격원화금액').to_numpy()+1).reshape(-1,1)
-    train_custom_rate=train_origin_data.pop('관세율').to_numpy().reshape(-1,1)
-
+    train_origin_data,crime_target,priority_target=split_target(train_origin_data)
     #replace data
     train_submit=np.load(os.path.join(data_path,'submit.npy'),allow_pickle=True)
     train_express=np.load(os.path.join(data_path,'express.npy'),allow_pickle=True)
@@ -69,9 +84,9 @@ def gen_data(data_path,configs):
     print("encoded dataset",train_encoded_data.shape)
 
     # numerical dataset
-    train_price_tensor=torch.tensor(train_price,dtype=torch.float)
-    train_weight_tensor=torch.tensor(train_weight,dtype=torch.float)
-    train_custom_rate_tensor=torch.tensor(train_custom_rate,dtype=torch.float)
+    train_price_tensor=torch.tensor(numerical_data['price'],dtype=torch.float)
+    train_weight_tensor=torch.tensor(numerical_data['weight'],dtype=torch.float)
+    train_custom_rate_tensor=torch.tensor(numerical_data['custom_rate'],dtype=torch.float)
     # categorical dataset -> encoded data
     train_encoded_data_tensor=torch.tensor(train_encoded_data,dtype=torch.float)
     train_tensor_data=torch.cat((train_encoded_data_tensor,train_price_tensor,train_weight_tensor,train_custom_rate_tensor),dim=1)
@@ -79,7 +94,7 @@ def gen_data(data_path,configs):
 
     indices=np.arange(len(train_tensor_data))
     # train_tensor_data=torch.cat((train_price_tensor,train_weight_tensor,train_custom_rate_tensor),dim=1)
-    del train_price,train_weight,train_custom_rate,train_encoded_data
+    del numerical_data,train_encoded_data
     print(train_tensor_data.size())
     train_crime_indices,test_crime_indices=train_test_split(indices,stratify=crime_target,random_state=configs['seed'])
     train_priority_indices,test_priority_indices=train_test_split(indices,stratify=priority_target,random_state=configs['seed'])
@@ -93,3 +108,60 @@ def gen_data(data_path,configs):
     np.save(os.path.join(data_path,'mod_test_priority_index.npy'),test_priority_indices)
     print('Transform Finished')
     return
+
+def get_data(data_path,configs):
+    # train_origin_data=pd.read_csv(os.path.join(data_path,'train.csv'))
+    # train_origin_data=drop_data(train_origin_data)
+    # #HS top and mid
+    # HS10=train_origin_data.pop('HS10단위부호')
+    
+    # train_origin_data,numerical_data=numerical_preprocessing(train_origin_data)
+
+    # train_origin_data,crime_target,priority_target=split_target(train_origin_data)
+    # pop_code={
+    #     '수입자부호':train_origin_data.pop('수입자부호'),
+    #     '신고인부호':train_origin_data.pop('신고인부호'),
+    #     '해외업체부호':train_origin_data.pop('해외업체부호'),
+    #     '특송부호':train_origin_data.pop('특송부호'),
+    # }
+    # threshold_dict={
+    #     '수입자부호':10,
+    #     '신고인부호':70,
+    #     '해외업체부호':20,
+    #     '특송부호':400
+    # }
+    # from DataProcessing.mask_column import get_list
+    # for key in pop_code.keys():
+    #     pop_code[key]=get_list(pop_code[key],threshold_dict[key])
+    
+    # train_origin_data['수입자부호']=pop_code['수입자부호']
+    # train_origin_data['신고인부호']=pop_code['신고인부호']
+    # train_origin_data['해외업체부호']=pop_code['해외업체부호']
+    # train_origin_data['특송부호']=pop_code['특송부호']
+
+    # hs_code = np.array(HS10)
+    # hs_code = hs_code.astype(np.str)
+    # hs_code_list = hs_code.tolist()
+    # hs=dict()
+    # hs['top_two'] = np.array([h[:2] for h in hs_code_list])
+    # hs['mid_two'] = np.array([h[2:4] for h in hs_code_list])
+        
+    # dh
+    table_data=pd.read_csv(os.path.join(data_path,'preprocessing_data_df_2.csv'))
+    crime_target=table_data.pop('우범여부')
+    priority_target=table_data.pop('핵심적발')
+    indices=np.arange(len(table_data))
+    train_priority_indices,test_priority_indices=train_test_split(indices,stratify=priority_target,random_state=configs['seed'])
+    train_crime_indices,test_crime_indices=train_test_split(indices,stratify=crime_target,random_state=configs['seed'])
+    npy_dict={
+            'table_data':table_data,
+            'crime_target':crime_target,
+            'priority_target':priority_target,
+            'train_crime_indices':train_crime_indices,
+            'test_crime_indices':test_crime_indices,
+            'train_priority_indices':train_priority_indices,
+            'test_priority_indices':test_priority_indices,
+        }
+    return npy_dict
+
+

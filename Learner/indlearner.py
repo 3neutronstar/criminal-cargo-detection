@@ -69,6 +69,8 @@ class TorchLearner(BaseLearner):
             self.logger = logging.getLogger('best')
             self.logger.info('[Mode {}] [Best Crime Acc {:.2f}] [Best Crime F1 {:.3f}]'.format(self.configs['mode'],self.best_acc[0],self.best_f1score[0]))
             self.logger.info('[Mode {}] [Best Priority Acc {:.2f}] [Best Priority F1 {:.3f}]'.format(self.configs['mode'],self.best_acc[1],self.best_f1score[1]))
+            advantage_score=0.5*self.best_f1score[0]+0.5*self.best_f1score[1]
+            self.logger.info('[Advantage Score] {}'.format(advantage_score))
 
         print('==End==')
 

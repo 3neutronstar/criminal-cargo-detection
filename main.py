@@ -9,6 +9,7 @@ from Utils.params import save_params
 from Learner.indlearner import CrimeLearner, PriorityLearner
 from Learner.mixedlearner import MixedLearner
 from Learner.xgboost import XGBoostLearner
+from Utils.record import record_data
 from DataProcessing.gen_data import gen_data
 import logging
 
@@ -60,6 +61,16 @@ def parse_args(args):
     parser.add_argument(
         '--kd_loss', type=bool, default=False,
         help='run by kd loss')
+    parser.add_argument(
+        '--preprocess', type=bool, default=False,
+        help='using csv(true) or preprocessed data(false)')
+    if parser.parse_known_args(args)[0].mode.lower()=='record':
+        parser.add_argument(
+            '--load_name', type=str, default=None,
+            help='read file name')
+        
+
+    parser.add_argument()
 
     return parser.parse_known_args(args)[0]  
 
@@ -95,6 +106,10 @@ def main(args):
     ## generate data ##
     if configs['mode']=='gen_data':
         gen_data(data_path,configs)
+        exit()
+    elif configs['mode']=='record':
+        runner=RecordData(data_path,save_path,configs)
+        runner.run()
         exit()
     ###################
 
