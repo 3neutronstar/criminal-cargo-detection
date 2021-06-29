@@ -1,4 +1,4 @@
-from Model.relmodel import MixedModel
+from Model.mixmodel import MixedModel
 import torch
 from Utils.calc_score import calc_score
 import time

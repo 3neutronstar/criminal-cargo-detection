@@ -154,9 +154,9 @@ def get_data(data_path,configs):
     train_priority_indices,test_priority_indices=train_test_split(indices,stratify=priority_target,random_state=configs['seed'])
     train_crime_indices,test_crime_indices=train_test_split(indices,stratify=crime_target,random_state=configs['seed'])
     npy_dict={
-            'table_data':table_data,
-            'crime_target':crime_target,
-            'priority_target':priority_target,
+            'table_data':table_data.to_numpy(),
+            'crime_target':crime_target.to_numpy(),
+            'priority_target':priority_target.to_numpy(),
             'train_crime_indices':train_crime_indices,
             'test_crime_indices':test_crime_indices,
             'train_priority_indices':train_priority_indices,

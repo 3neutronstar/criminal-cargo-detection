@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from Model.indmodel import *
-from Model.relmodel import *
+from Model.mixmodel import *
 MODEL={
     'crime':CrimeModel,
     'priority':PriorityModel,

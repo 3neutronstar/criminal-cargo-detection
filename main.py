@@ -105,7 +105,8 @@ def main(args):
         gen_data(data_path,configs)
         exit()
     elif configs['mode']=='record':
-        runner=RecordData(data_path,save_path,configs)
+        from Utils.record import RecordData
+        runner=RecordData(data_path,save_path,current_path,configs)
         runner.run()
         exit()
     ###################
