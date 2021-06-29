@@ -68,10 +68,7 @@ def parse_args(args):
         parser.add_argument(
             '--load_name', type=str, default=None,
             help='read file name')
-        
-
-    parser.add_argument()
-
+    
     return parser.parse_known_args(args)[0]  
 
 def main(args):
