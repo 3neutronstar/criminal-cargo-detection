@@ -159,6 +159,7 @@ class TorchLearner(BaseLearner):
                         self.best_acc[i]=score_dict[model_type]['accuracy']
                 if save==True:
                     self.save_models(epoch,score_dict)
+                    
 
         else:
             if mode=='eval':
@@ -172,8 +173,8 @@ class TorchLearner(BaseLearner):
         self.logger=logging.getLogger('{}'.format(mode))
         self.logger.info('\n[{} Epoch {}] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
             epoch,model_type,score_dict['loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score']))
+        self.logWriter.add_scalars('{}_{}'.format(mode,model_type),score_dict)
     
-
 
 class CrimeLearner(TorchLearner):
     def __init__(self,logger,imte_data, data_path, save_path, device, configs):

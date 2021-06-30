@@ -9,7 +9,7 @@ from Utils.params import save_params
 from Learner.indlearner import CrimeLearner, PriorityLearner
 from Learner.mixedlearner import MixedLearner
 from Learner.xgboost import XGBoostLearner
-from Utils.record import record_data
+from Utils.record import RecordData
 from DataProcessing.gen_data import gen_data
 import logging
 
@@ -50,7 +50,7 @@ def parse_args(args):
         '--weight_decay', type=float, default=5e-4,
         help='set optimizer\'s weight decay')
     parser.add_argument(
-        '--epochs', type=int, default=200,
+        '--epochs', type=int, default=100,
         help='run epochs')
     parser.add_argument(
         '--lr_decay', type=int, default=3,
@@ -68,6 +68,10 @@ def parse_args(args):
         parser.add_argument(
             '--load_name', type=str, default=None,
             help='read file name')
+    elif  parser.parse_known_args(args)[0].mode.lower()=='gen_data':
+        parser.add_argument(
+            '--split_ratio', '-sr',type=float, default=0.75,
+            help='split ratio for training_set')
     
     return parser.parse_known_args(args)[0]  
 
@@ -105,7 +109,6 @@ def main(args):
         gen_data(data_path,configs)
         exit()
     elif configs['mode']=='record':
-        from Utils.record import RecordData
         runner=RecordData(data_path,save_path,current_path,configs)
         runner.run()
         exit()

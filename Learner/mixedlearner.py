@@ -38,10 +38,6 @@ class MixedLearner(TorchLearner):
             train_loss+=loss.item()
             score_dict['total']+=crime_targets.size(0)
             if batch_idx%50==1:
-                print('==============================='*3)
-                print(crime_predictions,crime_targets,'crime')
-                print(priority_predictions,priority_targets,'priority')
-                print('==============================='*3)
                 crime_acc=(self.metric['crime']['predictions']==self.metric['crime']['targets']).sum()/self.metric['crime']['targets'].size(0)*100.0
                 priority_acc=(self.metric['priority']['predictions']==self.metric['priority']['targets']).sum()/self.metric['priority']['targets'].size(0)*100.0
                 print('\r{}epoch {}/{}, [Crime Acc] {:.2f} [Priority Acc] {:.2f}  [Loss] {:.5f}'.format(epoch,int(score_dict['total']),

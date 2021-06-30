@@ -17,10 +17,12 @@ def load_dataset(data_path,configs):
             'table_data':np.load(os.path.join(data_path,'mod_data.npy')),
             'crime_target':np.load(os.path.join(data_path,'mod_crime_target.npy')), # y_1 (0,1)
             'priority_target':np.load(os.path.join(data_path,'mod_priority_target.npy')), #y_2 (0,1,2)
-            'train_crime_indices':np.load(os.path.join(data_path,'mod_train_priority_index.npy')),
-            'test_crime_indices':np.load(os.path.join(data_path,'mod_test_priority_index.npy')),
-            'train_priority_indices':np.load(os.path.join(data_path,'mod_train_crime_index.npy')),
-            'test_priority_indices':np.load(os.path.join(data_path,'mod_test_crime_index.npy'))
+            'train_priority_indices':np.load(os.path.join(data_path,'mod_train_priority_index.npy')),
+            'test_priority_indices':np.load(os.path.join(data_path,'mod_test_priority_index.npy')),
+            'train_crime_indices':np.load(os.path.join(data_path,'sorted_train_crime_index.npy')),
+            'test_crime_indices':np.load(os.path.join(data_path,'sorted_test_crime_index.npy'))
+            # 'train_priority_indices':np.load(os.path.join(data_path,'mod_train_crime_index.npy')),
+            # 'test_priority_indices':np.load(os.path.join(data_path,'mod_test_crime_index.npy'))
         }
 
     #type casting
