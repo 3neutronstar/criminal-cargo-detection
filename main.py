@@ -59,8 +59,8 @@ def parse_args(args):
         '--lr_decay_rate', type=float, default=0.8,
         help='run epochs')
     parser.add_argument(
-        '--kd_loss', type=bool, default=False,
-        help='run by kd loss')
+        '--kd_loss', type=str, default=None,
+        help='run by kd loss or f beta loss')
     parser.add_argument(
         '--preprocess', type=bool, default=False,
         help='using csv(true) or preprocessed data(false)')
