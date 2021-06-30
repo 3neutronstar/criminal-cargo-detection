@@ -133,13 +133,14 @@ class TorchLearner(BaseLearner):
         return score_dict
 
     def save_models(self,epoch, score_dict):
-        dict_model={
-            'epoch':epoch,
-            'model_state_dict':self.model.state_dict(),
-        }.update(score_dict)
+        dict_model= self.model.save_model(epoch,score_dict)
         torch.save(dict_model,
         os.path.join(self.save_path,self.time_data,'best_model.pt'))
-    
+
+    def load_model(self):
+        dict_model=torch.load(self.save_path,self.configs['file_name'],'best_model.pt')
+        self.model.load_model(dict_model)
+
     def _get_score(self,predictions,targets,score_dict):
         score_dict=calc_score(predictions,targets,score_dict)
         return score_dict
@@ -173,7 +174,7 @@ class TorchLearner(BaseLearner):
         self.logger=logging.getLogger('{}'.format(mode))
         self.logger.info('\n[{} Epoch {}] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
             epoch,model_type,score_dict['loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score']))
-        self.logWriter.add_scalars('{}_{}'.format(mode,model_type),score_dict)
+        self.logWriter.add_scalars('{}_{}'.format(mode,model_type),score_dict,epoch)
     
 
 class CrimeLearner(TorchLearner):

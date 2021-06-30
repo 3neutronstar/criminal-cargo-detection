@@ -78,18 +78,10 @@ class RecordData:
         self.test_csv['핵심적발']=metric['priority']['predictions']
         self.test_csv.to_csv(os.path.join(self.save_path,self.configs['file_name']+'_test.csv'))
         return
-
-    def _load_model(self):
-        load_model_state=os.path.join(self.save_path,self.configs['file_name'],self.configs['file_name']+'.pt')
-        dict_model=torch.load(load_model_state)
-        print('Model\'s Score: ')
-        for key in dict_model.keys():
-            if key=='model_state_dict':
-                continue
-            else:
-                print(dict_model[key])
-        self.model.load_state_dict(dict_model['model_state_dict'])
         
+    def _load_model(self):
+        dict_model=torch.load(self.save_path,self.configs['file_name'],'best_model.pt')
+        self.model.load_model(dict_model)
 
     def save_models(self,epoch, score_dict):
         dict_model={

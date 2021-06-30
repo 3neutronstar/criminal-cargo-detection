@@ -21,8 +21,8 @@ def load_dataset(data_path,configs):
             'test_priority_indices':np.load(os.path.join(data_path,'mod_test_priority_index.npy')),
             'train_crime_indices':np.load(os.path.join(data_path,'sorted_train_crime_index.npy')),
             'test_crime_indices':np.load(os.path.join(data_path,'sorted_test_crime_index.npy'))
-            # 'train_priority_indices':np.load(os.path.join(data_path,'mod_train_crime_index.npy')),
-            # 'test_priority_indices':np.load(os.path.join(data_path,'mod_test_crime_index.npy'))
+            # 'train_crime_indices':np.load(os.path.join(data_path,'mod_train_crime_index.npy')),
+            # 'test_crime_indices':np.load(os.path.join(data_path,'mod_test_crime_index.npy'))
         }
 
     #type casting
@@ -91,8 +91,8 @@ def load_dataset(data_path,configs):
 def load_dataloader(data_path,configs):
     if 'xgboost' not in configs['mode']:
         train_dataset,test_dataset=load_dataset(data_path,configs)
-        train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],shuffle=True,)
-        test_dataloader=DataLoader(test_dataset,batch_size=configs['batch_size'],shuffle=False)
+        train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],shuffle=True,num_workers=configs['num_workers'])
+        test_dataloader=DataLoader(test_dataset,batch_size=configs['batch_size'],shuffle=False,num_workers=configs['num_workers'])
         return train_dataloader,test_dataloader
     else: #xgboost
         train_data,train_target,test_data,test_target = load_dataset(data_path,configs)       

@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as f
@@ -66,3 +67,15 @@ class MixedModel(nn.Module):
         # priority_input=x
         priority_output=self.priority_model(priority_input)
         return crime_output,priority_output
+
+    def save_model(self,epoch,score_dict):
+        dict_model={
+            'epoch':epoch,
+            'crime_model_state_dict':self.crime_model.state_dict(),
+            'priority_model_state_dict':self.priority_model.state_dict(),
+        }.update(score_dict)
+        return dict_model
+
+    def load_model(self,dict_model):
+        self.crime_model.load_state_dict(dict_model['crime_model_state_dict'])
+        self.priority_model.load_state_dict(dict_model['priority_model_state_dict'])
