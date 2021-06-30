@@ -5,7 +5,7 @@ import torch.nn.functional as f
 from torch.nn.modules import loss
 from torch.optim.lr_scheduler import StepLR
 from Model.indmodel import CrimeModel,PriorityModel
-from Utils.kd_loss import loss_kd_regularization
+from Utils.custom_loss import loss_kd_regularization,f_beta_score_loss
 class MixedScheduler():
     def __init__(self,crime_scheduler,priority_scheduler):
         self.crime_scheduler=crime_scheduler
@@ -36,8 +36,10 @@ class MixedLossFunction():
         self.configs=configs
     
     def __call__(self,crime_y_pred,priority_y_pred,crime_y_truth,priority_y_truth):
-        if self.configs['kd_loss']==True:
+        if self.configs['custom_loss']=='kd_loss':
             crime_loss=loss_kd_regularization(crime_y_pred,crime_y_truth)
+        elif self.configs['custom_loss']=='fbeta_loss':
+            crime_loss=f_beta_score_loss(crime_y_pred,crime_y_truth)
         else:
             crime_loss=self.crime_criterion(crime_y_pred,crime_y_truth)
         
@@ -45,8 +47,10 @@ class MixedLossFunction():
         idx=torch.logical_or(priority_y_truth==1,priority_y_truth==2)
         priority_y_truth=priority_y_truth[idx]-1
         priority_y_pred=priority_y_pred[torch.stack((idx,idx),dim=1)].view(-1,2)
-        if self.configs['kd_loss']==True:
+        if self.configs['custom_loss']=='kd_loss':
             priority_loss=torch.nan_to_num(loss_kd_regularization(priority_y_pred,priority_y_truth))
+        elif self.configs['custom_loss']=='fbeta_loss':
+            priority_loss=torch.nan_to_num(f_beta_score_loss(priority_y_pred,priority_y_truth))
         else:
             priority_loss=torch.nan_to_num(self.priority_criterion(priority_y_pred,priority_y_truth))
         return crime_loss,priority_loss

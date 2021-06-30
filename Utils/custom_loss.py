@@ -21,3 +21,22 @@ def loss_kd_regularization(outputs, labels):
     KD_loss = (1. - alpha)*loss_CE + alpha*loss_soft_regu
 
     return KD_loss
+
+def f_beta_score_loss(self, y_pred, y_true):
+    assert y_pred.ndim == 2
+    assert y_true.ndim == 1
+    beta=1/10.0
+    y_true = F.one_hot(y_true, 2).to(torch.float32)
+    y_pred = F.softmax(y_pred, dim=1)
+    
+    tp = (y_true * y_pred).sum(dim=0).to(torch.float32)
+    tn = ((1 - y_true) * (1 - y_pred)).sum(dim=0).to(torch.float32)
+    fp = ((1 - y_true) * y_pred).sum(dim=0).to(torch.float32)
+    fn = (y_true * (1 - y_pred)).sum(dim=0).to(torch.float32)
+
+    precision = tp / (tp + fp + self.epsilon)
+    recall = tp / (tp + fn + self.epsilon)
+
+    f1 = (1+beta**2)* (precision*recall) / (beta**2*precision + recall + 1e-7)
+    f1 = f1.clamp(min=self.epsilon, max=1-self.epsilon)
+    return 1 - f1.mean()
