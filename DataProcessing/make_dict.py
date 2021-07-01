@@ -1,6 +1,6 @@
 import numpy as np
 
-class make_dict():
+class MappingJsonGenerator():
     def __init__(self, train_csv, test_csv):
         self.crime = np.array(train_csv['우범여부'])
         train_csv = train_csv.drop(['우범여부', '핵심적발', '신고번호', '신고일자', '신고중량(KG)', '과세가격원화금액', '관세율', '검사결과코드'], axis = 1)
