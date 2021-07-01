@@ -30,3 +30,8 @@ crime-cargo-detection
     python run.py [mode] --colab True
 ```
 
+- For data recording at test.csv,
+``` shell script
+    python run.py record --file_name [name in 'training_data' directory]
+```
+
