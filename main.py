@@ -59,7 +59,7 @@ def parse_args(args):
         '--lr_decay_rate', type=float, default=0.8,
         help='run epochs')
     parser.add_argument(
-        '--custom_loss', type=str, default=None,
+        '--custom_loss', type=str, default='baseline',
         help='run by kd loss or f beta loss')
     parser.add_argument(
         '--preprocess', type=bool, default=False,
@@ -70,7 +70,7 @@ def parse_args(args):
         parser.add_argument(
             '--file_name', type=str, default=None,
             help='read file name')
-    elif  parser.parse_known_args(args)[0].mode.lower()=='gen_data':
+    elif parser.parse_known_args(args)[0].mode.lower()=='gen_data' or parser.parse_known_args(args)[0].preprocess==True:
         parser.add_argument(
             '--split_ratio', '-sr',type=float, default=0.75,
             help='split ratio for training_set')

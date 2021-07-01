@@ -1,5 +1,5 @@
 import torch
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import classification_report
 # 2x2 matrix
 def calc_score_2x2(predictions,targets,score_dict):

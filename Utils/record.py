@@ -15,7 +15,7 @@ class RecordData:
         from DataProcessing.preprocessing import Preprocessing
         Preprocessing(self.test_csv,configs)
         self.npy_dict=Preprocessing.run()
-        self.data_loader=DataLoader(self.npy_dict['table_data'])
+        self.data_loader=DataLoader(self.npy_dict['test_data'])
         self.configs=load_params(configs,current_path,configs['file_name'])
 
         self.input_space=self.dataloader.dataset[0][0].size()[0]

@@ -1,28 +1,24 @@
 from DataProcessing.preprocessing import Preprocessing
 import os
+import sklearn
 import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader,TensorDataset
 from torch.utils.data import Subset
-from sklearn.model_selection import train_test_split
 import torch
-from DataProcessing.gen_data import get_data
 def load_dataset(data_path,configs):
     # get data
     if configs['preprocess']==True:
-        npy_dict=get_data(data_path,configs)
-        # Preprocessing(data_path,configs)
+        # npy_dict=get_data(data_path,configs)
+        preprocessing=Preprocessing(data_path,configs)
+        npy_dict=preprocessing.run()
     else:
         npy_dict={
-            'table_data':np.load(os.path.join(data_path,'mod_data.npy')),
-            'crime_target':np.load(os.path.join(data_path,'mod_crime_target.npy')), # y_1 (0,1)
-            'priority_target':np.load(os.path.join(data_path,'mod_priority_target.npy')), #y_2 (0,1,2)
-            'train_priority_indices':np.load(os.path.join(data_path,'mod_train_priority_index.npy')),
-            'test_priority_indices':np.load(os.path.join(data_path,'mod_test_priority_index.npy')),
-            # 'train_crime_indices':np.load(os.path.join(data_path,'sorted_train_crime_index.npy')),
-            # 'test_crime_indices':np.load(os.path.join(data_path,'sorted_test_crime_index.npy'))
-            'train_crime_indices':np.load(os.path.join(data_path,'mod_train_crime_index.npy')),
-            'test_crime_indices':np.load(os.path.join(data_path,'mod_test_crime_index.npy'))
+            'table_data':np.load(os.path.join(data_path,'train_data.npy')),
+            'crime_targets':np.load(os.path.join(data_path,'crime_targets.npy')), # y_1 (0,1)
+            'priority_targets':np.load(os.path.join(data_path,'priority_targets.npy')), #y_2 (0,1,2)
+            'train_indices':np.load(os.path.join(data_path,'train_indices.npy')),
+            'valid_indices':np.load(os.path.join(data_path,'valid_indices.npy')),
         }
 
     #type casting
@@ -34,66 +30,67 @@ def load_dataset(data_path,configs):
 
     #data separation
         if 'crime' in configs['mode']:
-            crime_dataset=TensorDataset(npy_dict['table_data'],npy_dict['crime_target'])
+            crime_dataset=TensorDataset(npy_dict['table_data'],npy_dict['crime_targets'])
             #crime
-            train_dataset=Subset(crime_dataset,npy_dict['train_crime_indices'])
-            test_dataset=Subset(crime_dataset,npy_dict['test_crime_indices'])
+            train_dataset=Subset(crime_dataset,npy_dict['train_indices'])
+            valid_dataset=Subset(crime_dataset,npy_dict['valid_indices'])
 
         elif 'priority' in configs['mode']:
             #priority
-            train_data=npy_dict['table_data'][npy_dict['train_priority_indices'].long()]
-            test_data=npy_dict['table_data'][npy_dict['test_priority_indices'].long()]
+            train_data=npy_dict['table_data'][npy_dict['train_indices'].long()]
+            valid_data=npy_dict['table_data'][npy_dict['valid_indices'].long()]
 
-            train_target=npy_dict['priority_target'][npy_dict['train_priority_indices'].long()]
-            test_target=npy_dict['priority_target'][npy_dict['test_priority_indices'].long()]
+            train_target=npy_dict['priority_targets'][npy_dict['train_indices'].long()]
+            valid_target=npy_dict['priority_targets'][npy_dict['valid_indices'].long()]
 
             # select 1 and 2
             train_data=train_data[torch.logical_or(train_target==1,train_target==2)]
-            test_data=test_data[torch.logical_or(test_target==1,test_target==2)]
+            valid_data=valid_data[torch.logical_or(valid_target==1,valid_target==2)]
             train_target=train_target[torch.logical_or(train_target==1,train_target==2)]
-            test_target=test_target[torch.logical_or(test_target==1,test_target==2)]
+            valid_target=valid_target[torch.logical_or(valid_target==1,valid_target==2)]
 
             # change target 1 to 0, 2 to 1
             train_target[train_target==1]=0
             train_target[train_target==2]=1
-            test_target[test_target==1]=0
-            test_target[test_target==2]=1
+            valid_target[valid_target==1]=0
+            valid_target[valid_target==2]=1
             train_dataset=TensorDataset(train_data,train_target)
-            test_dataset=TensorDataset(test_data,test_target)
+            valid_dataset=TensorDataset(valid_data,valid_target)
 
         elif configs['mode']=='train_mixed':
             #mixed
-            mixed_dataset=TensorDataset(npy_dict['table_data'],npy_dict['crime_target'],npy_dict['priority_target'])
-            train_dataset=Subset(mixed_dataset,npy_dict['train_priority_indices'])
-            test_dataset=Subset(mixed_dataset,npy_dict['test_priority_indices'])
+            mixed_dataset=TensorDataset(npy_dict['table_data'],npy_dict['crime_targets'],npy_dict['priority_targets'])
+            train_dataset=Subset(mixed_dataset,npy_dict['train_indices'])
+            valid_dataset=Subset(mixed_dataset,npy_dict['valid_indices'])
 
         else:
             print('No dataset')
             raise NotImplementedError
-        return train_dataset, test_dataset
+        return train_dataset, valid_dataset
+
     else: #XGBOOST
         if 'crime' in configs['mode']:
-            train_data=npy_dict['table_data'][npy_dict['train_crime_indices']]
-            test_data=npy_dict['table_data'][npy_dict['test_crime_indices']]
+            train_data=npy_dict['table_data'][npy_dict['train_indices']]
+            valid_data=npy_dict['table_data'][npy_dict['valid_indices']]
 
-            train_target=npy_dict['crime_target'][npy_dict['train_crime_indices']]
-            test_target=npy_dict['crime_target'][npy_dict['test_crime_indices']]
+            train_target=npy_dict['crime_targets'][npy_dict['train_indices']]
+            valid_target=npy_dict['crime_targets'][npy_dict['valid_indices']]
         elif 'priority' in configs['mode']:
                 
-            train_data=npy_dict['table_data'][npy_dict['train_priority_indices']]
-            test_data=npy_dict['table_data'][npy_dict['test_priority_indices']]
+            train_data=npy_dict['table_data'][npy_dict['train_indices']]
+            valid_data=npy_dict['table_data'][npy_dict['valid_indices']]
 
-            train_target=npy_dict['priority_target'][npy_dict['train_priority_indices']]
-            test_target=npy_dict['priority_target'][npy_dict['test_priority_indices']]
-        return train_data,train_target,test_data,test_target
+            train_target=npy_dict['priority_targets'][npy_dict['train_indices']]
+            valid_target=npy_dict['priority_targets'][npy_dict['valid_indices']]
+        return train_data,train_target,valid_data,valid_target
         
 
 def load_dataloader(data_path,configs):
     if 'xgboost' not in configs['mode']:
-        train_dataset,test_dataset=load_dataset(data_path,configs)
+        train_dataset,valid_dataset=load_dataset(data_path,configs)
         train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],shuffle=True,num_workers=configs['num_workers'])
-        test_dataloader=DataLoader(test_dataset,batch_size=configs['batch_size'],shuffle=False,num_workers=configs['num_workers'])
-        return train_dataloader,test_dataloader
+        valid_dataloader=DataLoader(valid_dataset,batch_size=configs['batch_size'],shuffle=False,num_workers=configs['num_workers'])
+        return train_dataloader,valid_dataloader
     else: #xgboost
-        train_data,train_target,test_data,test_target = load_dataset(data_path,configs)       
-        return train_data,train_target,test_data,test_target
+        train_data,train_target,valid_data,valid_target = load_dataset(data_path,configs)       
+        return train_data,train_target,valid_data,valid_target
