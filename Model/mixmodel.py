@@ -5,7 +5,7 @@ import torch.nn.functional as f
 from torch.nn.modules import loss
 from torch.optim.lr_scheduler import StepLR
 from Model.indmodel import CrimeModel,PriorityModel
-from Utils.custom_loss import loss_kd_regularization,f_beta_score_loss
+from Utils.custom_loss import *
 class MixedScheduler():
     def __init__(self,crime_scheduler,priority_scheduler):
         self.crime_scheduler=crime_scheduler
@@ -34,25 +34,31 @@ class MixedLossFunction():
         self.crime_criterion=crime_criterion
         self.priority_criterion=priority_criterion
         self.configs=configs
+        if self.configs['custom_loss']=='kd_loss':
+            self.custom_criterion=KDRegLoss(configs)
+        elif self.configs['custom_loss']=='fbeta_loss':
+            self.custom_criterion=FBetaLoss(configs)
+        else: 
+            self.custom_criterion=None
     
     def __call__(self,crime_y_pred,priority_y_pred,crime_y_truth,priority_y_truth):
-        if self.configs['custom_loss']=='kd_loss':
-            crime_loss=loss_kd_regularization(crime_y_pred,crime_y_truth)
-        elif self.configs['custom_loss']=='fbeta_loss':
-            crime_loss=f_beta_score_loss(crime_y_pred,crime_y_truth)
-        else:
-            crime_loss=self.crime_criterion(crime_y_pred,crime_y_truth)
+        crime_custom_loss=0.0
+        priority_custom_loss=0.0
+
+        crime_loss=self.crime_criterion(crime_y_pred,crime_y_truth)
+        if self.custom_criterion is not None:
+            crime_custom_loss=self.custom_criterion(crime_y_pred,crime_y_truth)
+        crime_loss+=crime_custom_loss
         
         # search only
         idx=torch.logical_or(priority_y_truth==1,priority_y_truth==2)
         priority_y_truth=priority_y_truth[idx]-1
         priority_y_pred=priority_y_pred[torch.stack((idx,idx),dim=1)].view(-1,2)
-        if self.configs['custom_loss']=='kd_loss':
-            priority_loss=torch.nan_to_num(loss_kd_regularization(priority_y_pred,priority_y_truth))
-        elif self.configs['custom_loss']=='fbeta_loss':
-            priority_loss=torch.nan_to_num(f_beta_score_loss(priority_y_pred,priority_y_truth))
-        else:
-            priority_loss=torch.nan_to_num(self.priority_criterion(priority_y_pred,priority_y_truth))
+        priority_loss=torch.nan_to_num(self.priority_criterion(priority_y_pred,priority_y_truth))
+        if self.custom_criterion is not None:
+            priority_custom_loss=torch.nan_to_num(self.custom_criterion(priority_y_pred,priority_y_truth))
+        priority_loss+=priority_custom_loss
+
         return crime_loss,priority_loss
 
 class MixedModel(nn.Module):

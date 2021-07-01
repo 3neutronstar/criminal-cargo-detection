@@ -64,6 +64,8 @@ def parse_args(args):
     parser.add_argument(
         '--preprocess', type=bool, default=False,
         help='using csv(true) or preprocessed data(false)')
+
+    # mode dependancy
     if parser.parse_known_args(args)[0].mode.lower()=='record':
         parser.add_argument(
             '--file_name', type=str, default=None,
@@ -72,6 +74,23 @@ def parse_args(args):
         parser.add_argument(
             '--split_ratio', '-sr',type=float, default=0.75,
             help='split ratio for training_set')
+
+    # custom loss dependancy
+    if parser.parse_known_args(args)[0].custom_loss.lower()=='kd_loss':
+        parser.add_argument(
+            '--temperature', type=float, default=20.0,
+            help='kd temp')
+        parser.add_argument(
+            '--alpha', type=float, default=0.6,
+            help='kd alpha')
+    elif parser.parse_known_args(args)[0].custom_loss.lower()=='fbeta_loss':
+        parser.add_argument(
+            '--lambda', type=float, default=1.0,
+            help='fbeta_loss dependant total loss rate')
+        parser.add_argument(
+            '--beta', type=float, default=10.0,
+            help='f beta score loss')
+
     
     return parser.parse_known_args(args)[0]  
 

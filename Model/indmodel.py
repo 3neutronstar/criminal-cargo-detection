@@ -1,24 +1,5 @@
 import torch
 import torch.nn as nn
-from Utils.custom_loss import loss_kd_regularization,f_beta_score_loss
-
-
-class CustomLossFunction():
-    def __init__(self,criterion,configs):
-        self.criterion=criterion
-        self.configs=configs
-    
-    def __call__(self,outputs,ground_truth):
-        if self.configs['custom_loss']=='kd_loss':
-            loss=loss_kd_regularization(outputs,ground_truth)
-        elif self.configs['custom_loss']=='fbeta_loss':
-            f1_loss=f_beta_score_loss(outputs,ground_truth)
-            loss=self.criterion(outputs,ground_truth)
-            loss+=f1_loss
-        else:
-            loss=self.criterion(outputs,ground_truth)
-        return loss
-
 
 class CrimeModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
@@ -35,7 +16,7 @@ class CrimeModel(nn.Module):
             nn.ReLU(),
             nn.Linear(100,output_space)
         )
-        self.criterion=CustomLossFunction(nn.CrossEntropyLoss(),configs)
+        self.criterion=nn.CrossEntropyLoss()
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])
         self.scheduler=torch.optim.lr_scheduler.StepLR(optimizer=self.optimizer,step_size=configs['lr_decay'], gamma=configs['lr_decay_rate'])
 
@@ -71,7 +52,7 @@ class PriorityModel(nn.Module):
             nn.ReLU(),
             nn.Linear(100,output_space),
         )
-        self.criterion=CustomLossFunction(nn.CrossEntropyLoss(),configs)
+        self.criterion=nn.CrossEntropyLoss()
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])
         self.scheduler=torch.optim.lr_scheduler.StepLR(optimizer=self.optimizer,step_size=configs['lr_decay'], gamma=configs['lr_decay_rate'])
 

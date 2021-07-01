@@ -10,9 +10,9 @@ crime-cargo-detection
 ``` shell script
     python run.py train_priority
 ```
-- Train binary classification with the custom_loss
+- Train binary classification with the custom_loss (kd: [temperature, alpha], fbeta: [lambda, beta] options)
 ``` shell script
-    python run.py [train_crime,train_priority,train_mixed] --custom_loss [kd_loss,kbeta_loss]
+    python run.py [train_crime,train_priority,train_mixed] --custom_loss [kd_loss,fbeta_loss]
 ```
 - Train binary classification whether cargo is crime or not
 ``` shell script

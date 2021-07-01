@@ -9,6 +9,8 @@ from Learner.baselearner import BaseLearner
 from Model.basemodel import MODEL
 from DataProcessing.load_data import load_dataloader
 from torch.utils.tensorboard import SummaryWriter
+from Utils.custom_loss import KDRegLoss,FBetaLoss
+
 class TorchLearner(BaseLearner):
     def __init__(self, logger,time_data, data_path, save_path, device, configs):
         super(TorchLearner,self).__init__(logger,time_data, data_path, save_path, device, configs)
@@ -32,10 +34,17 @@ class TorchLearner(BaseLearner):
         'recall':0.0,
         'f1score':0.0,
         'loss':0.0,
+        'custom_loss':0.0,
         }
         self.best_f1score=0.0
         self.best_acc=0.0
         self.metric=dict()
+        if self.configs['custom_loss']=='kd_loss':
+            self.custom_criterion=KDRegLoss(configs)
+        elif self.configs['custom_loss']=='fbeta_loss':
+            self.custom_criterion=FBetaLoss(configs)
+        else: 
+            self.custom_criterion=None
 
     def run(self):
         self.model.to(self.configs['device'])
@@ -77,12 +86,21 @@ class TorchLearner(BaseLearner):
     def _train(self,epoch,score_dict):
         self.model.train()
         train_loss=0.0
+        train_custom_loss=0.0
+        custom_loss=None
 
         for batch_idx, (data,targets) in enumerate(self.train_dataloader):
             data,targets=data.to(self.configs['device']),targets.to(self.configs['device'])
 
             outputs=self.model(data)
-            loss=self.criterion(outputs,targets)
+            if self.custom_criterion is None:
+                loss=self.criterion(outputs,targets)
+            else:
+                loss=self.criterion(outputs,targets)
+                custom_loss=self.custom_criterion(outputs,targets)
+                train_custom_loss+=custom_loss.item()
+                loss+=custom_loss
+
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
@@ -102,6 +120,8 @@ class TorchLearner(BaseLearner):
             
         score_dict=self._get_score(self.metric['predictions'],self.metric['targets'],score_dict)
         score_dict['loss']=train_loss/(batch_idx+1)
+        if custom_loss is not None:
+            score_dict['custom_loss']=train_custom_loss/(batch_idx+1)
         return score_dict
 
   
@@ -109,6 +129,8 @@ class TorchLearner(BaseLearner):
 
         self.model.eval()
         eval_loss=0.0
+        eval_custom_loss=0.0
+        custom_loss=None
 
         with torch.no_grad():
             for batch_idx,(data,targets) in enumerate(self.test_dataloader):
@@ -117,8 +139,13 @@ class TorchLearner(BaseLearner):
                 outputs=self.model(data)
                 predictions=torch.max(outputs,dim=1)[1].clone() # cross-entropy
                 # predictions=torch.round(outputs).view(-1)#linear regression
-
-                loss=self.criterion(outputs,targets)
+                if self.custom_criterion is None:
+                    loss=self.criterion(outputs,targets)
+                else:
+                    loss=self.criterion(outputs,targets)
+                    custom_loss=self.custom_criterion(outputs,targets)
+                    eval_custom_loss+=custom_loss.item()
+                    loss+=custom_loss
 
                 eval_loss +=loss.item()
                 if self.metric == dict():
@@ -129,6 +156,8 @@ class TorchLearner(BaseLearner):
                     self.metric['targets']=torch.cat((self.metric['targets'],targets),dim=0)
         score_dict=self._get_score(self.metric['predictions'],self.metric['targets'],score_dict)
         score_dict['loss']=eval_loss/(batch_idx+1)
+        if custom_loss is not None:
+            score_dict['custom_loss']=eval_custom_loss/(batch_idx+1)
 
         return score_dict
 
@@ -172,8 +201,12 @@ class TorchLearner(BaseLearner):
 
     def _write_logger(self,epoch,model_type,score_dict,mode):
         self.logger=logging.getLogger('{}'.format(mode))
-        self.logger.info('\n[{} Epoch {}] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
-            epoch,model_type,score_dict['loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score']))
+        if score_dict['custom_loss']==0.0:
+            self.logger.info('\n[{} Epoch {}] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
+                epoch,model_type,score_dict['loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score']))
+        else:
+            self.logger.info('\n[{} Epoch {}] [ce loss] {:.5f} [custom loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
+                epoch,model_type,score_dict['loss'],score_dict['custom_loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score']))
         self.logWriter.add_scalars('{}_{}'.format(mode,model_type),score_dict,epoch)
     
 
