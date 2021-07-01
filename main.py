@@ -53,7 +53,7 @@ def parse_args(args):
         '--epochs', type=int, default=100,
         help='run epochs')
     parser.add_argument(
-        '--lr_decay', type=int, default=3,
+        '--lr_decay', type=int, default=5,
         help='run epochs')
     parser.add_argument(
         '--lr_decay_rate', type=float, default=0.8,
@@ -81,7 +81,7 @@ def parse_args(args):
             '--temperature', type=float, default=20.0,
             help='kd temp')
         parser.add_argument(
-            '--alpha', type=float, default=0.6,
+            '--alpha', type=float, default=1.5,
             help='kd alpha')
     elif parser.parse_known_args(args)[0].custom_loss.lower()=='fbeta_loss':
         parser.add_argument(

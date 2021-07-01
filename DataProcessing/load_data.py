@@ -19,8 +19,11 @@ def load_dataset(data_path,configs):
             'priority_targets':np.load(os.path.join(data_path,'priority_targets.npy')), #y_2 (0,1,2)
             'train_indices':np.load(os.path.join(data_path,'train_indices.npy')),
             'valid_indices':np.load(os.path.join(data_path,'valid_indices.npy')),
+            'test_data':np.load(os.path.join(data_path,'test_data.npy')),
         }
-
+    
+    if configs['mode']=='record':
+        return npy_dict
     #type casting
     if 'xgboost' not in configs['mode']:
         for key in npy_dict.keys():
