@@ -1,12 +1,14 @@
 import numpy as np
 
 class MappingJsonGenerator():
-    def __init__(self, train_csv, test_csv):
+    def __init__(self, train_csv, test_csv, fillna_str, drop_list):
+        self.fillna_str = fillna_str
+        self.drop_list = drop_list
         self.crime = np.array(train_csv['우범여부'])
-        train_csv = train_csv.drop(['우범여부', '핵심적발', '신고번호', '신고일자', '신고중량(KG)', '과세가격원화금액', '관세율', '검사결과코드'], axis = 1)
-        test_csv = test_csv.drop(['신고번호', '신고일자', '신고중량(KG)', '과세가격원화금액', '관세율', '검사결과코드'], axis = 1)
-        self.train_csv = train_csv.fillna('Missing')
-        self.test_csv = test_csv.fillna('Missing')
+        train_csv = train_csv.drop(['우범여부', '핵심적발'].append(self.drop_list), axis = 1)
+        test_csv = test_csv.drop(self.drop_list, axis = 1)
+        self.train_csv = train_csv.fillna(self.fillna_str)
+        self.test_csv = test_csv.fillna(self.fillna_str)
         self.column_list = np.array(self.train_csv.columns, dtype=str)
         self.crime_idx = np.where(self.crime == 1)[0]
         self.dictionary = dict()
@@ -39,3 +41,6 @@ class MappingJsonGenerator():
                 self.dictionary[self.column_list[i]][c]['onehot'] = int(assign_idx)
                 
         return self.dictionary
+
+# Example
+# ret_dict = make_dict(train_csv, test_csv, 'Missing', ['신고번호', '신고일자', '신고중량(KG)', '과세가격원화금액', '관세율', '검사결과코드'])()
