@@ -40,7 +40,7 @@ def calc_score(predictions, targets,score_dict):
     score_dict['f1score']=f1*100.0
     print_dict=classification_report(targets,predictions,zero_division=0,digits=4)
     # print('\n')
-    # print(print_dict)
+    print(print_dict)
     return score_dict
 
 # def calc_score(predictions,targets,score_dict):
