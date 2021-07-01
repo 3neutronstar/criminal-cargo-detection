@@ -66,7 +66,7 @@ def parse_args(args):
         help='using csv(true) or preprocessed data(false)')
     if parser.parse_known_args(args)[0].mode.lower()=='record':
         parser.add_argument(
-            '--load_name', type=str, default=None,
+            '--file_name', type=str, default=None,
             help='read file name')
     elif  parser.parse_known_args(args)[0].mode.lower()=='gen_data':
         parser.add_argument(
