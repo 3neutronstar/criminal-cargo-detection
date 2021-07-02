@@ -45,8 +45,8 @@ class Preprocessing:
         if os.path.exists(os.path.join(data_path,'mapping.json'))==False:
             train_dataframe=pd.read_csv(os.path.join(data_path,'train.csv'))
             test_dataframe=pd.read_csv(os.path.join(data_path,'test.csv'))
-            self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고번호', '신고일자', '신고중량(KG)', '과세가격원화금액', '관세율', '검사결과코드'])()
-            
+            self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율', '검사결과코드'])()
+            print("Generate Json complete")
             with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
                 json.dump(self.mapping_dict, fp, indent=2)
         else:
