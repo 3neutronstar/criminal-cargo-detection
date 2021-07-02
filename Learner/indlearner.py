@@ -126,7 +126,6 @@ class TorchLearner(BaseLearner):
 
   
     def _eval(self,epoch,score_dict):
-
         self.model.eval()
         eval_loss=0.0
         eval_custom_loss=0.0

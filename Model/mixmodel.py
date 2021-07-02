@@ -83,9 +83,11 @@ class MixedModel(nn.Module):
             'epoch':epoch,
             'crime_model_state_dict':self.crime_model.state_dict(),
             'priority_model_state_dict':self.priority_model.state_dict(),
-        }.update(score_dict)
+        }
+        dict_model=dict_model.update(score_dict)
         return dict_model
 
     def load_model(self,dict_model):
+        print(dict_model)
         self.crime_model.load_state_dict(dict_model['crime_model_state_dict'])
         self.priority_model.load_state_dict(dict_model['priority_model_state_dict'])
