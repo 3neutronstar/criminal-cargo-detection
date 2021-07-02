@@ -74,6 +74,9 @@ class RecordData:
         return copy.deepcopy(self.metric)
 
     def _record(self,metric):
+        for key in self.test_csv.columns:
+            if key not in ['우범여부','핵심적발','신고번호']:
+                self.test_csv.drop(key,axis=1,inplace=True)
         if self.configs['mode'].split('_')[1]=='mixed':
             self.test_csv['우범여부']=metric['crime']['predictions'].cpu()
             self.test_csv['핵심적발']=metric['priority']['predictions'].cpu()
