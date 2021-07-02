@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+from Utils.custom_loss import FocalLoss
 class CrimeModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
         super(CrimeModel,self).__init__()
@@ -17,6 +17,7 @@ class CrimeModel(nn.Module):
             nn.Linear(100,output_space)
         )
         self.criterion=nn.CrossEntropyLoss()
+        # self.criterion=FocalLoss(gamma=0)
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])
         self.scheduler=torch.optim.lr_scheduler.StepLR(optimizer=self.optimizer,step_size=configs['lr_decay'], gamma=configs['lr_decay_rate'])
 
