@@ -8,6 +8,7 @@ class MappingJsonGenerator():
         self.crime = np.array(train_csv['우범여부'])
         self.train_csv = train_csv.drop(['우범여부', '핵심적발'] + self.drop_list, axis = 1)
         self.test_csv = test_csv.drop(self.drop_list, axis = 1)
+        print(self.train_csv.shape,self.test_csv.shape)
         
         # train_hs_code = np.array(self.train_csv['HS10단위부호'], dtype = str)
         # test_hs_code = np.array(self.test_csv['HS10단위부호'], dtype = str)
