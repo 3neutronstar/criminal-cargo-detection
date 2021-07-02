@@ -30,12 +30,17 @@ class CrimeModel(nn.Module):
         y=self.model(x)
         return y
 
+
     def save_model(self,epoch,score_dict):
         dict_model={
             'epoch':epoch,
-            'model_state_dict':self.model.state_dict(),
-        }.update(score_dict)
+            'crime_model_state_dict':self.model.state_dict(),
+        }
+        dict_model.update(score_dict)
         return dict_model
+
+    def load_model(self,dict_model):
+        self.model.load_state_dict(dict_model['crime_model_state_dict'])
 
 class PriorityModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
@@ -69,9 +74,10 @@ class PriorityModel(nn.Module):
     def save_model(self,epoch,score_dict):
         dict_model={
             'epoch':epoch,
-            'model_state_dict':self.model.state_dict(),
-        }.update(score_dict)
+            'priority_model_state_dict':self.model.state_dict(),
+        }
+        dict_model.update(score_dict)
         return dict_model
 
     def load_model(self,dict_model):
-        self.load_state_dict(dict_model['crime_model_state_dict'])
+        self.load_state_dict(dict_model['priority_model_state_dict'])

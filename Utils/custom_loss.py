@@ -15,7 +15,6 @@ class KDRegLoss():
         self.alpha = 0.6
         self.T = 20.0
         correct_prob = 0.99    # the probability for correct class in u(k)
-        loss_CE = F.cross_entropy(outputs, labels)
         K = outputs.size(1)
 
         teacher_soft = torch.ones_like(outputs)
@@ -24,7 +23,7 @@ class KDRegLoss():
             teacher_soft[i ,labels[i]] = correct_prob
         loss_soft_regu = nn.KLDivLoss(reduction='batchmean')(F.log_softmax(outputs, dim=1), F.softmax(teacher_soft/self.T, dim=1))*100
 
-        KD_loss = (1. - self.alpha)*loss_CE + self.alpha*loss_soft_regu
+        KD_loss = self.alpha*loss_soft_regu
 
         return KD_loss
 
