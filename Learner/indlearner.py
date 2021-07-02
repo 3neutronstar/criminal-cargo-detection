@@ -126,7 +126,6 @@ class TorchLearner(BaseLearner):
 
   
     def _eval(self,epoch,score_dict):
-
         self.model.eval()
         eval_loss=0.0
         eval_custom_loss=0.0
@@ -163,6 +162,7 @@ class TorchLearner(BaseLearner):
 
     def save_models(self,epoch, score_dict):
         dict_model= self.model.save_model(epoch,score_dict)
+        print("save")
         torch.save(dict_model,
         os.path.join(self.save_path,self.time_data,'best_model.pt'))
 
