@@ -84,8 +84,8 @@ class MixedModel(nn.Module):
             'crime_model_state_dict':self.crime_model.state_dict(),
             'priority_model_state_dict':self.priority_model.state_dict(),
         }
-        dict_model=dict_model.update(score_dict)
-        print(dict_model.keys())
+        dict_model.update(score_dict)
+
         return dict_model
 
     def load_model(self,dict_model):
