@@ -12,15 +12,15 @@ def load_dataset(data_path,configs):
         # npy_dict=get_data(data_path,configs)
         preprocessing=Preprocessing(data_path,configs)
         npy_dict=preprocessing.run()
-    else:
-        npy_dict={
-            'table_data':np.load(os.path.join(data_path,'train_data.npy')),
-            'crime_targets':np.load(os.path.join(data_path,'crime_targets.npy')), # y_1 (0,1)
-            'priority_targets':np.load(os.path.join(data_path,'priority_targets.npy')), #y_2 (0,1,2)
-            'train_indices':np.load(os.path.join(data_path,'train_indices.npy')),
-            'valid_indices':np.load(os.path.join(data_path,'valid_indices.npy')),
-            'test_data':np.load(os.path.join(data_path,'test_data.npy')),
-        }
+
+    npy_dict={
+        'table_data':np.load(os.path.join(data_path,'train_data.npy')),
+        'crime_targets':np.load(os.path.join(data_path,'crime_targets.npy')), # y_1 (0,1)
+        'priority_targets':np.load(os.path.join(data_path,'priority_targets.npy')), #y_2 (0,1,2)
+        'train_indices':np.load(os.path.join(data_path,'train_indices.npy')),
+        'valid_indices':np.load(os.path.join(data_path,'valid_indices.npy')),
+        'test_data':np.load(os.path.join(data_path,'test_data.npy')),
+    }
     
     if configs['mode']=='record':
         return npy_dict
