@@ -44,8 +44,7 @@ class Preprocessing:
         self.data_path=data_path
         # load mapping dictionary
         if os.path.exists(os.path.join(data_path,'mapping.json'))==False:
-            train_dataframe=pd.read_csv(os.path.join(data_path,'train.csv'))
-            test_dataframe=pd.read_csv(os.path.join(data_path,'test.csv'))
+            train_dataframe,test_dataframe=self._load_dataset()
             self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
             print("Generate Json complete")
             with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
@@ -103,7 +102,7 @@ class Preprocessing:
         numeric_features = ['신고중량(KG)', '과세가격원화금액']
 
         if train_or_test == 'train':
-          dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True)
+          dataframe.drop(['신고일자','신고번호'],axis=1,inplace=True)
         elif train_or_test == 'test':
           dataframe.drop(['신고일자'],axis=1,inplace=True)
 
