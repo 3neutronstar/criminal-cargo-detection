@@ -89,7 +89,7 @@ class Preprocessing:
         train_indices,valid_indices=train_test_split(indices,stratify=targets,random_state=self.configs['seed'],test_size=1-self.configs['split_ratio'],train_size=self.configs['split_ratio'])
         return train_indices, valid_indices
 
-    def _transform(self, dataframe:DataFrame)->DataFrame:
+    def _transform(self, dataframe:DataFrame, train_or_test)->DataFrame:
         rescaler=RescaleNumeric()
         """
         categorical_features = ['통관지세관부호', '신고인부호', '수입자부호', '해외거래처부호', '특송업체부호', 
@@ -101,45 +101,49 @@ class Preprocessing:
         categorical_features = self.mapping_dict.keys()
         numeric_features = ['신고중량(KG)', '과세가격원화금액']
 
-        if '신고번호' in dataframe.columns:
-            dataframe.drop(['신고일자','신고번호','검사결과코드'],axis=1,inplace=True)
-        else:
-            dataframe.drop(['신고일자', '검사결과코드'],axis=1,inplace=True)
+        if train_or_test == 'train':
+          df.drop(['신고일자','신고번호','검사결과코드','우범여부','핵심적발'],axis=1,inplace=True)
+        elif train_or_test == 'test':
+          df.drop(['신고일자', '검사결과코드'],axis=1,inplace=True)
 
         dataframe.fillna('Missing', inplace=True)
 
         for column in numeric_features:
             dataframe[column] = rescaler(np.log(dataframe.pop(column).to_numpy()+1).reshape(-1,1))
 
+        np_data = df[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
+        len_df = len(df.index)
+        
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
                 continue
             dataframe[column] = dataframe[column].map(str)
-            dict_col = self.mapping_dict[column] # 특성값
-            dataframe[column + '_등장횟수'] = 0
-            dataframe[column + '_등장비율'] = 0.0
-            # dataframe[column + '_핵심우범비율'] = 0.0
+            dict_col = self.mapping_dict[column]
+            np_count_ratio = np.zeros((len_df,2))
 
-            # # 원 핫 인코딩 자리수 확인      
-            # max_ohe = len(dict_col.keys())
-            # encoding_digits = find_digits(max_ohe) # 인코딩 변환 후 자리수 계산
-            # for idx in reversed(range(encoding_digits)): # 인코딩 변환 열 추가
-            #     dataframe[column + '_' + str(idx)] = 0
+            max_ohe = len(dict_col.keys())
+            encoding_digits = find_digits(max_ohe) 
+            np_encoding = np.zeros((len_df,encoding_digits))
 
-            # 각 행마다 값의 개수와 비율 저장 row = dataframe[column][idx]
             for row in dataframe[column].index: 
-                val_data = dataframe[column][row] # 원소값
-                dataframe[column + '_등장횟수'][row]= dict_col[val_data]['count']
-                dataframe[column + '_등장비율'][row]= dict_col[val_data]['crime_ratio']
-                # dataframe[column + '_핵심우범비율'][row]= dict_col[val_data]['priority_ratio']
+                val_data = dataframe[column][row]
+                np_count_ratio[row][0] = dict_col[val_data]['count']
+                np_count_ratio[row][1] = dict_col[val_data]['ratio']
 
-                # x = binary_transform(dict_col[val_data]['onehot']) # 이진 변환
-                # len_x = len(x) # 이진수의 자리수
-                # for idx in range(len_x): 
-                #     dataframe[column + '_' + str(idx)][row]= x[idx]
-            dataframe[column+'_등장횟수']=rescaler(np.log(dataframe.pop(column+'_등장횟수').to_numpy(dtype=np.float32)+1).reshape(-1,1))
-            dataframe.drop(column,axis=1,inplace=True) # key 열 제거
+                x = Bin(dict_col[val_data]['onehot']) 
+                len_x = len(x) 
+                for idx in range(len_x): 
+                  if x[idx]=='1':
+                    np_encoding[row][idx] = x[idx]
+                    
+            np_count_ratio[:,0] = np_count_ratio[:,0]/(np_count_ratio[:,0].max())
+            np_count_ratio[:,1] = np_count_ratio[:,1]/(np_count_ratio[:,1].max())
+            np_encoding = np_encoding[:,::-1]
+
+            np_concat = np.concatenate((np_count_ratio, np_encoding),axis=1)
+            np_data = np.concatenate((np_data,np_concat), axis=1)
+            
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
-        print("After transform shape",dataframe.shape)
-        print(dataframe.columns)
-        return dataframe
+        print("After transform shape",np_data.shape)
+        #print(np_data.columns)
+        return np_data
