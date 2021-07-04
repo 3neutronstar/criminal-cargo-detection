@@ -118,7 +118,7 @@ class Preprocessing:
             dict_col = self.mapping_dict[column] # 특성값
             dataframe[column + '_등장횟수'] = 0
             dataframe[column + '_등장비율'] = 0.0
-            dataframe[column + '_핵심우범비율'] = 0.0
+            # dataframe[column + '_핵심우범비율'] = 0.0
 
             # # 원 핫 인코딩 자리수 확인      
             # max_ohe = len(dict_col.keys())
@@ -131,7 +131,7 @@ class Preprocessing:
                 val_data = dataframe[column][row] # 원소값
                 dataframe[column + '_등장횟수'][row]= dict_col[val_data]['count']
                 dataframe[column + '_등장비율'][row]= dict_col[val_data]['crime_ratio']
-                dataframe[column + '_핵심우범비율'][row]= dict_col[val_data]['priority_ratio']
+                # dataframe[column + '_핵심우범비율'][row]= dict_col[val_data]['priority_ratio']
 
                 # x = binary_transform(dict_col[val_data]['onehot']) # 이진 변환
                 # len_x = len(x) # 이진수의 자리수
