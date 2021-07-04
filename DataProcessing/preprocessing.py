@@ -2,6 +2,7 @@
 import os
 import json
 import numpy as np
+import copy
 import pandas as pd
 import csv
 import os
@@ -55,8 +56,8 @@ class Preprocessing:
         #
 
     def _load_dataset(self):
-        train_dataframe=pd.read_csv(os.path.join(self.data_path,'train.csv'))
-        test_dataframe=pd.read_csv(os.path.join(self.data_path,'test.csv'))
+        train_dataframe=copy.deepcopy(pd.read_csv(os.path.join(self.data_path,'train.csv')))
+        test_dataframe=copy.deepcopy(pd.read_csv(os.path.join(self.data_path,'test.csv')))
         return train_dataframe,test_dataframe
     
     def run(self) ->dict:
