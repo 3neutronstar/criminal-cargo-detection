@@ -102,17 +102,17 @@ class Preprocessing:
         numeric_features = ['신고중량(KG)', '과세가격원화금액']
 
         if train_or_test == 'train':
-          df.drop(['신고일자','신고번호','검사결과코드','우범여부','핵심적발'],axis=1,inplace=True)
+          dataframe.drop(['신고일자','신고번호','검사결과코드','우범여부','핵심적발'],axis=1,inplace=True)
         elif train_or_test == 'test':
-          df.drop(['신고일자', '검사결과코드'],axis=1,inplace=True)
+          dataframe.drop(['신고일자', '검사결과코드'],axis=1,inplace=True)
 
         dataframe.fillna('Missing', inplace=True)
 
         for column in numeric_features:
             dataframe[column] = rescaler(np.log(dataframe.pop(column).to_numpy()+1).reshape(-1,1))
 
-        np_data = df[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-        len_df = len(df.index)
+        np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
+        len_df = len(dataframe.index)
         
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
@@ -130,7 +130,7 @@ class Preprocessing:
                 np_count_ratio[row][0] = dict_col[val_data]['count']
                 np_count_ratio[row][1] = dict_col[val_data]['ratio']
 
-                x = Bin(dict_col[val_data]['onehot']) 
+                x = binary_transform(dict_col[val_data]['onehot']) 
                 len_x = len(x) 
                 for idx in range(len_x): 
                   if x[idx]=='1':

@@ -6,7 +6,6 @@ class MappingJsonGenerator():
         self.fillna_str = fillna_str
         self.drop_list = drop_list
         self.crime = np.array(train_csv['우범여부'])
-        # self.priority = np.array(train_csv['핵심적발'])
         self.train_csv = train_csv.drop(['우범여부', '핵심적발'] + self.drop_list, axis = 1)
         self.test_csv = test_csv.drop(self.drop_list, axis = 1)
         
@@ -24,7 +23,7 @@ class MappingJsonGenerator():
 
         self.train_csv = self.train_csv.fillna(self.fillna_str)
         self.test_csv = self.test_csv.fillna(self.fillna_str)
-        # self.column_list = np.array(np.concatenate([self.train_csv.columns, np.array(['HS_upper', 'HS_middle'], dtype = str)], axis = 0), dtype=str)
+        #self.column_list = np.array(np.concatenate([self.train_csv.columns, np.array(['HS_upper', 'HS_middle'], dtype = str)], axis = 0), dtype=str)
         self.column_list = np.array(self.train_csv.columns, dtype=str)
         self.crime_idx = np.where(self.crime == 1)[0]
         self.dictionary = dict()
@@ -35,8 +34,8 @@ class MappingJsonGenerator():
     def forward(self):
         
         train_np, test_np = np.array(self.train_csv, dtype = str), np.array(self.test_csv, dtype = str)
-        # train_np = np.concatenate([train_np, self.train_hs_upper_code, self.train_hs_middle_code], axis = 1)
-        # test_np = np.concatenate([test_np, self.test_hs_upper_code, self.test_hs_middle_code], axis = 1)
+        #train_np = np.concatenate([train_np, self.train_hs_upper_code, self.train_hs_middle_code], axis = 1)
+        #test_np = np.concatenate([test_np, self.test_hs_upper_code, self.test_hs_middle_code], axis = 1)
         
         for i in range(len(self.column_list)):
             
@@ -48,7 +47,6 @@ class MappingJsonGenerator():
 
             c_idx = 0
             for assign_idx, c in enumerate(total_code) : 
-                # crime
                 if c not in crime_code : 
                     crime_ratio[assign_idx] = 0.
                 else :
@@ -57,7 +55,7 @@ class MappingJsonGenerator():
 
                 self.dictionary[self.column_list[i]][c] = {}
                 self.dictionary[self.column_list[i]][c]['count'] = int(total_count[assign_idx])
-                self.dictionary[self.column_list[i]][c]['crime_ratio'] = float(crime_ratio[assign_idx])
+                self.dictionary[self.column_list[i]][c]['ratio'] = float(crime_ratio[assign_idx])
                 self.dictionary[self.column_list[i]][c]['onehot'] = int(assign_idx)
                 
         return self.dictionary
