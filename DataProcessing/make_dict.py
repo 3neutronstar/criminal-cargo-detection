@@ -27,7 +27,6 @@ class MappingJsonGenerator():
         self.column_list = np.array(np.concatenate([self.train_csv.columns, np.array(['HS_upper', 'HS_middle'], dtype = str)], axis = 0), dtype=str)
         # self.column_list = np.array(self.train_csv.columns, dtype=str)
         self.crime_idx = np.where(self.crime == 1)[0]
-        self.priority = np.where(self.priority == 1)[0]
         self.dictionary = dict()
         
     def __call__(self):
@@ -45,12 +44,9 @@ class MappingJsonGenerator():
             concat = np.concatenate([train_np[:, i], test_np[:, i]], axis = 0)
             total_code, total_count = np.unique(concat, return_counts=True)
             crime_code, crime_count = np.unique(train_np[:, i][self.crime_idx], return_counts=True)
-            priority_code, priority_count = np.unique(train_np[:, i][self.crime_idx], return_counts=True)
             crime_ratio = np.empty((total_count.shape[0], ))
-            priority_ratio = np.empty((total_count.shape[0], ))
 
             c_idx = 0
-            p_idx = 0
             for assign_idx, c in enumerate(total_code) : 
                 # crime
                 if c not in crime_code : 
@@ -58,17 +54,10 @@ class MappingJsonGenerator():
                 else :
                     crime_ratio[assign_idx] = np.round(crime_count[c_idx] / total_count[assign_idx], 4)
                     c_idx += 1
-                # priority
-                if c not in priority_code : #p==c
-                    priority_ratio[assign_idx] = 0.
-                else :
-                    priority_ratio[assign_idx] = np.round(priority_count[p_idx] / total_count[assign_idx], 4)
-                    p_idx += 1
 
                 self.dictionary[self.column_list[i]][c] = {}
                 self.dictionary[self.column_list[i]][c]['count'] = int(total_count[assign_idx])
                 self.dictionary[self.column_list[i]][c]['crime_ratio'] = float(crime_ratio[assign_idx])
-                self.dictionary[self.column_list[i]][c]['priority_ratio'] = float(priority_ratio[assign_idx])
                 self.dictionary[self.column_list[i]][c]['onehot'] = int(assign_idx)
                 
         return self.dictionary
