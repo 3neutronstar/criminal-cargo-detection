@@ -122,8 +122,8 @@ class Preprocessing:
             # 원 핫 인코딩 자리수 확인      
             max_ohe = len(dict_col.keys())
             encoding_digits = find_digits(max_ohe) # 인코딩 변환 후 자리수 계산
-            # for idx in reversed(range(encoding_digits)): # 인코딩 변환 열 추가
-            #     dataframe[column + '_' + str(idx)] = 0
+            for idx in reversed(range(encoding_digits)): # 인코딩 변환 열 추가
+                dataframe[column + '_' + str(idx)] = 0
 
             # 각 행마다 값의 개수와 비율 저장 row = dataframe[column][idx]
             for row in dataframe[column].index: 
@@ -131,10 +131,10 @@ class Preprocessing:
                 dataframe[column + '_등장횟수'][row]= dict_col[val_data]['count']
                 dataframe[column + '_등장비율'][row]= dict_col[val_data]['ratio']
 
-                # x = binary_transform(dict_col[val_data]['onehot']) # 이진 변환
-                # len_x = len(x) # 이진수의 자리수
-                # for idx in range(len_x): 
-                #     dataframe[column + '_' + str(idx)][row]= x[idx]
+                x = binary_transform(dict_col[val_data]['onehot']) # 이진 변환
+                len_x = len(x) # 이진수의 자리수
+                for idx in range(len_x): 
+                    dataframe[column + '_' + str(idx)][row]= x[idx]
             dataframe[column+'_등장횟수']=rescaler(np.log(dataframe.pop(column+'_등장횟수').to_numpy(dtype=np.float32)+1).reshape(-1,1))
             dataframe.drop(column,axis=1,inplace=True) # key 열 제거
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
