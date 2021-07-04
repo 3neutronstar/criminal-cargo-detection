@@ -36,7 +36,7 @@ class MappingJsonGenerator():
         train_np, test_np = np.array(self.train_csv, dtype = str), np.array(self.test_csv, dtype = str)
         #train_np = np.concatenate([train_np, self.train_hs_upper_code, self.train_hs_middle_code], axis = 1)
         #test_np = np.concatenate([test_np, self.test_hs_upper_code, self.test_hs_middle_code], axis = 1)
-        
+        print(train_np.shape,test_np.shape)
         for i in range(len(self.column_list)):
             
             self.dictionary[self.column_list[i]] = {}

@@ -45,7 +45,7 @@ class Preprocessing:
         if os.path.exists(os.path.join(data_path,'mapping.json'))==False:
             train_dataframe=pd.read_csv(os.path.join(data_path,'train.csv'))
             test_dataframe=pd.read_csv(os.path.join(data_path,'test.csv'))
-            self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율', '검사결과코드'])()
+            self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
             print("Generate Json complete")
             with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
                 json.dump(self.mapping_dict, fp, indent=2)
@@ -76,7 +76,7 @@ class Preprocessing:
                 npy_dict['crime_targets']=csv_dataframe.pop('우범여부')
                 npy_dict['priority_targets']=csv_dataframe.pop('핵심적발')
                 npy_dict['train_indices'], npy_dict['valid_indices']=self._split_indices(csv_dataframe,npy_dict['priority_targets'])
-            npy_dict['{}_data'.format(data_type)]=self._transform(csv_dataframe)
+            npy_dict['{}_data'.format(data_type)]=self._transform(csv_dataframe,data_type)
         for key in npy_dict.keys():
             if isinstance(npy_dict,DataFrame):
                 npy_dict[key]=npy_dict[key].to_numpy()
