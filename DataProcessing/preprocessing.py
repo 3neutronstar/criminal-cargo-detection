@@ -75,7 +75,7 @@ class Preprocessing:
                 npy_dict['crime_targets']=csv_dataframe.pop('우범여부')
                 npy_dict['priority_targets']=csv_dataframe.pop('핵심적발')
                 npy_dict['train_indices'], npy_dict['valid_indices']=self._split_indices(csv_dataframe,npy_dict['priority_targets'])
-            npy_dict['{}_data'.format(data_type)]=self._transform(csv_dataframe,data_type)
+            npy_dict['{}_data'.format(data_type)]=self._transform(csv_dataframe)
         for key in npy_dict.keys():
             if isinstance(npy_dict,DataFrame):
                 npy_dict[key]=npy_dict[key].to_numpy()
@@ -88,7 +88,7 @@ class Preprocessing:
         train_indices,valid_indices=train_test_split(indices,stratify=targets,random_state=self.configs['seed'],test_size=1-self.configs['split_ratio'],train_size=self.configs['split_ratio'])
         return train_indices, valid_indices
 
-    def _transform(self, dataframe:DataFrame, train_or_test)->DataFrame:
+    def _transform(self, dataframe:DataFrame)->DataFrame:
         rescaler=RescaleNumeric()
         """
         categorical_features = ['통관지세관부호', '신고인부호', '수입자부호', '해외거래처부호', '특송업체부호', 
@@ -100,10 +100,8 @@ class Preprocessing:
         categorical_features = self.mapping_dict.keys()
         numeric_features = ['신고중량(KG)', '과세가격원화금액']
 
-        if train_or_test == 'train':
-          dataframe.drop(['신고일자','신고번호','검사결과코드'],axis=1,inplace=True)
-        elif train_or_test == 'test':
-          dataframe.drop(['신고일자','검사결과코드'],axis=1,inplace=True)
+        dataframe.drop(['신고일자','신고번호','검사결과코드'],axis=1,inplace=True,errors='ignore')
+        #   dataframe.drop(['신고일자','신고번호','검사결과코드'],axis=1,inplace=True,errors='ignore')
 
         dataframe.fillna('Missing', inplace=True)
 
@@ -132,8 +130,8 @@ class Preprocessing:
                 x = binary_transform(dict_col[val_data]['onehot']) 
                 len_x = len(x) 
                 for idx in range(len_x): 
-                  if x[idx]=='1':
-                    np_encoding[row][idx] = x[idx]
+                    if x[idx]=='1':
+                        np_encoding[row][idx] = x[idx]
                     
             np_count_ratio[:,0] = np_count_ratio[:,0]/(np_count_ratio[:,0].max())
             np_count_ratio[:,1] = np_count_ratio[:,1]/(np_count_ratio[:,1].max())

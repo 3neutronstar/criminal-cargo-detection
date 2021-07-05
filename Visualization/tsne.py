@@ -16,7 +16,7 @@ class Tsne:
 
     def run(self):
         # if self.configs['colab']==True:
-        manifoldtsne=TSNE(n_components=2).fit_transform(self.npy_dict['table_data'])
+        manifoldtsne=TSNE(n_components=2,verbose=1).fit_transform(self.npy_dict['table_data'])
         print("after shape:",manifoldtsne.shape)
         tsne_df=pd.DataFrame({'x':manifoldtsne[:,0],'y':manifoldtsne[:,1],'classes':self.npy_dict['crime_targets']})
         plt.figure(figsize=(16,10))
