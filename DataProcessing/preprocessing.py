@@ -93,14 +93,12 @@ class Preprocessing:
         """
         categorical_features = ['통관지세관부호', '신고인부호', '수입자부호', '해외거래처부호', '특송업체부호', 
                                 '수입통관계획코드', '수입신고구분코드', '수입거래구분코드', '수입종류코드', 
-                                '징수형태코드', '운송수단유형코드', '반입보세구역부호', 'HS10단위부호', 
+                                '징수형태코드', '운송수단유형코드', '반입보세구역부호', 'HS_upper', 'HS_middle', 
                                 '적출국가코드', '원산지국가코드', '관세율구분코드']
         """
         print("Before transform shape",dataframe.shape)
         categorical_features = self.mapping_dict.keys()
         numeric_features = ['신고중량(KG)', '과세가격원화금액']
-
-        dataframe.drop(['신고일자','신고번호','검사결과코드','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')
 
         dataframe.fillna('Missing', inplace=True)
 
@@ -108,6 +106,12 @@ class Preprocessing:
             dataframe[column] = rescaler(np.log(dataframe.pop(column).to_numpy()+1).reshape(-1,1))
 
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
+        
+        df['HS_upper'] = df['HS10단위부호']//100000000
+        df['HS_middle'] = df['HS10단위부호']//1000000%100
+            
+        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','HS10단위부호'],axis=1,inplace=True,errors='ignore')
+        
         len_df = len(dataframe.index)
         
         for i,column in enumerate(categorical_features):
