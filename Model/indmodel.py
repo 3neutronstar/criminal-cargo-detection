@@ -5,16 +5,21 @@ class CrimeModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
         super(CrimeModel,self).__init__()
         self.model=nn.Sequential(
-            nn.Linear(input_space,5000),
-            nn.BatchNorm1d(5000),
+            nn.Linear(input_space,6000),
+            nn.BatchNorm1d(6000),#5000),
             nn.ReLU(),
-            nn.Linear(5000,1000),
-            nn.BatchNorm1d(1000),
+            nn.Linear(6000,6000),
+            nn.BatchNorm1d(6000),
             nn.ReLU(),
-            nn.Linear(1000,100),
-            nn.BatchNorm1d(100),
+            nn.Linear(6000,3000),
+            nn.Dropout(0.5),
+            nn.BatchNorm1d(3000),
             nn.ReLU(),
-            nn.Linear(100,output_space)
+            nn.Linear(3000,800),
+            nn.Dropout(0.5),
+            nn.BatchNorm1d(800),
+            nn.ReLU(),
+            nn.Linear(800,output_space)
         )
         self.criterion=nn.CrossEntropyLoss()
         # self.criterion=FocalLoss(gamma=0)
@@ -47,16 +52,21 @@ class PriorityModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
         super(PriorityModel,self).__init__()
         self.model=nn.Sequential(
-            nn.Linear(input_space,5000),
-            nn.BatchNorm1d(5000),
+            nn.Linear(input_space,6000),
+            nn.BatchNorm1d(6000),#5000),
             nn.ReLU(),
-            nn.Linear(5000,1000),
-            nn.BatchNorm1d(1000),
+            nn.Linear(6000,6000),
+            nn.BatchNorm1d(6000),
             nn.ReLU(),
-            nn.Linear(1000,100),
-            nn.BatchNorm1d(100),
+            nn.Linear(6000,3000),
+            nn.Dropout(0.5),
+            nn.BatchNorm1d(3000),
             nn.ReLU(),
-            nn.Linear(100,output_space),
+            nn.Linear(3000,800),
+            nn.Dropout(0.5),
+            nn.BatchNorm1d(800),
+            nn.ReLU(),
+            nn.Linear(800,output_space)
         )
         self.criterion=nn.CrossEntropyLoss()
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])
