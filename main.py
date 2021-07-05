@@ -133,7 +133,7 @@ def main(args):
         exit()
     elif 'tsne' in configs['mode']:
         from Visualization.tsne import Tsne
-        shower=Tsne(data_path,save_path,current_path,configs)
+        shower=Tsne(data_path,save_path,current_path,device,configs)
         shower.run()
         exit()
     ###################
