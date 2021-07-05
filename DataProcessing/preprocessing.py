@@ -88,7 +88,7 @@ class Preprocessing:
         train_indices,valid_indices=train_test_split(indices,stratify=targets,random_state=self.configs['seed'],test_size=1-self.configs['split_ratio'],train_size=self.configs['split_ratio'])
         return train_indices, valid_indices
 
-    def _transform(self, dataframe:DataFrame)->DataFrame:
+    def _transform(self, dataframe:DataFrame)->np.ndarray:
         rescaler=RescaleNumeric()
         """
         categorical_features = ['통관지세관부호', '신고인부호', '수입자부호', '해외거래처부호', '특송업체부호', 
