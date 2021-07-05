@@ -15,8 +15,7 @@ class Tsne:
 
     def run(self):
         print(self.device)
-        if self.configs['colab']==True and self.device=='cuda':
-            print("hi")
+        if self.configs['colab']==True and str(self.device)=='cuda':
             import tsnecuda # available in cuda101
             import tsnecuda.TSNE as TSNE_CUDA
             manifoldtsne=TSNE_CUDA(n_components=2,perplexity=15,learning_rate=10,verbose=1).fit_transform(self.npy_dict['table_data'])
