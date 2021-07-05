@@ -4,6 +4,7 @@ from sklearn.manifold import TSNE
 import seaborn as sns
 import pandas as pd
 import os
+import numpy as np
 class Tsne:
     def __init__(self,data_path,save_path,current_path,device,configs):
         self.device=device
@@ -11,16 +12,21 @@ class Tsne:
         self.save_path=save_path
         self.current_path=current_path
         self.configs=configs
-        self.npy_dict=load_dataset(data_path,configs)
+        # self.npy_dict=load_dataset(data_path,configs)
+        self.npy_dict=dict()
 
     def run(self):
         print(self.device)
-        if self.configs['colab']==True and str(self.device)=='cuda':
-            import tsnecuda # available in cuda101
-            import tsnecuda.TSNE as TSNE_CUDA
-            manifoldtsne=TSNE_CUDA(n_components=2,perplexity=15,learning_rate=10,verbose=1).fit_transform(self.npy_dict['table_data'])
-        else:
-            manifoldtsne=TSNE(n_components=2,verbose=1).fit_transform(self.npy_dict['table_data'])
+        # if self.configs['colab']==True and str(self.device)=='cuda':
+        #     import tsnecuda # available in cuda101
+        #     import tsnecuda.TSNE as TSNE_CUDA
+        #     manifoldtsne=TSNE_CUDA(n_components=2,perplexity=15,learning_rate=10,verbose=1).fit_transform(self.npy_dict['table_data'])
+        # else:
+        self.npy_dict={
+            'table_data':np.load(os.path.join(self.data_path,'train_data_sj.npy')),
+            'crime_targets':np.load(os.path.join(self.data_path,'train_target.npy'))
+        }
+        manifoldtsne=TSNE(n_components=2,verbose=1).fit_transform(self.npy_dict['table_data'])
 
         print("after shape:",manifoldtsne.shape)
         if self.configs['mode']=='tsne_crime':
