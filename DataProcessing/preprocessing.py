@@ -44,7 +44,7 @@ class Preprocessing:
         self.data_path=data_path
         # load mapping dictionary
         train_dataframe,test_dataframe=self._load_dataset()
-        self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
+        self.mapping_dict = MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
         print("Generate Json complete")
         # save
         with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
@@ -80,7 +80,6 @@ class Preprocessing:
             if isinstance(npy_dict,DataFrame):
                 npy_dict[key]=npy_dict[key].to_numpy()
             np.save(os.path.join(self.data_path,'{}.npy'.format(key)),npy_dict[key])
-        
         return npy_dict
     
     def _split_indices(self,dataframe:DataFrame,targets:np.ndarray)->np.ndarray:
@@ -106,9 +105,9 @@ class Preprocessing:
             dataframe[column] = rescaler(np.log(dataframe.pop(column).to_numpy()+1).reshape(-1,1))
 
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-        
-        df['HS_upper'] = df['HS10단위부호']//100000000
-        df['HS_middle'] = df['HS10단위부호']//1000000%100
+
+        dataframe['HS_upper'] = dataframe['HS10단위부호']//100000000
+        dataframe['HS_middle'] = dataframe['HS10단위부호']//1000000%100
             
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','HS10단위부호'],axis=1,inplace=True,errors='ignore')
         
