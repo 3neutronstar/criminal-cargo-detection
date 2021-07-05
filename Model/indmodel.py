@@ -19,7 +19,7 @@ class CrimeModel(nn.Module):
             nn.Linear(1000,450),
             nn.BatchNorm1d(450),
             nn.ReLU(),
-            nn.Linear(800,output_space)
+            nn.Linear(450,output_space)
         )
         self.criterion=nn.CrossEntropyLoss()
         # self.criterion=FocalLoss(gamma=0)
