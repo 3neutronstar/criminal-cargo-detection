@@ -43,16 +43,15 @@ class Preprocessing:
         self.configs=configs
         self.data_path=data_path
         # load mapping dictionary
-        if os.path.exists(os.path.join(data_path,'mapping.json'))==False:
-            train_dataframe,test_dataframe=self._load_dataset()
-            self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
-            print("Generate Json complete")
-            with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
-                json.dump(self.mapping_dict, fp, indent=2)
-        else:
-            with open(os.path.join(data_path,'mapping.json'), 'r') as fp:
-                self.mapping_dict = json.load(fp)
-        #
+        train_dataframe,test_dataframe=self._load_dataset()
+        self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
+        print("Generate Json complete")
+        # save
+        with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
+            json.dump(self.mapping_dict, fp, indent=2)
+        # load
+        with open(os.path.join(data_path,'mapping.json'), 'r') as fp:
+            self.mapping_dict = copy.deepcopy(json.load(fp))
 
     def _load_dataset(self):
         train_dataframe=copy.deepcopy(pd.read_csv(os.path.join(self.data_path,'train.csv')))

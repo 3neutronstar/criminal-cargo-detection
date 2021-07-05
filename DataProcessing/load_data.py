@@ -22,7 +22,7 @@ def load_dataset(data_path,configs):
         'test_data':np.load(os.path.join(data_path,'test_data.npy')),
     }
     
-    if configs['mode']=='record':
+    if configs['mode'] in['record','tsne']:
         return npy_dict
     #type casting
     if 'xgboost' not in configs['mode']:
