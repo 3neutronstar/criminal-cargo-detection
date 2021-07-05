@@ -45,7 +45,7 @@ class Preprocessing:
         # load mapping dictionary
         if os.path.exists(os.path.join(data_path,'mapping.json'))==False:
             train_dataframe,test_dataframe=self._load_dataset()
-            self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
+            self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율', '검사결과코드'])()
             print("Generate Json complete")
             with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
                 json.dump(self.mapping_dict, fp, indent=2)
