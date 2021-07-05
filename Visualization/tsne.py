@@ -23,8 +23,8 @@ class Tsne:
         #     manifoldtsne=TSNE_CUDA(n_components=2,perplexity=15,learning_rate=10,verbose=1).fit_transform(self.npy_dict['table_data'])
         # else:
         self.npy_dict={
-            'table_data':np.load(os.path.join(self.data_path,'train_data_sj.npy')),
-            'crime_targets':np.load(os.path.join(self.data_path,'train_target.npy'))
+            'table_data':np.load(os.path.join(self.data_path,'train_data_sj.npy'),allow_pickle=True),
+            'crime_targets':np.load(os.path.join(self.data_path,'train_target.npy'),allow_pickle=True)
         }
         manifoldtsne=TSNE(n_components=2,verbose=1).fit_transform(self.npy_dict['table_data'])
 
