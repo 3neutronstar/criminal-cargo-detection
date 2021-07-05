@@ -26,7 +26,7 @@ def parse_args(args):
         epilog="python run.py mode")
     
     parser.add_argument(
-        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','eval','record','train_xgboost_crime','train_xgboost_priority','tsne'])
+        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','eval','record','train_xgboost_crime','train_xgboost_priority','tsne_crime','tsne_priority','tsne_mixed'])
     #TRAIN SECTION
     parser.add_argument(
         '--seed', type=int, default=1,
@@ -131,7 +131,7 @@ def main(args):
         runner=RecordData(data_path,save_path,current_path,configs)
         runner.run()
         exit()
-    elif configs['mode']=='tsne':
+    elif 'tsne' in configs['mode']:
         from Visualization.tsne import Tsne
         shower=Tsne(data_path,save_path,current_path,configs)
         shower.run()
