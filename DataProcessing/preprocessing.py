@@ -43,16 +43,15 @@ class Preprocessing:
         self.configs=configs
         self.data_path=data_path
         # load mapping dictionary
-        if os.path.exists(os.path.join(data_path,'mapping.json'))==False:
-            train_dataframe,test_dataframe=self._load_dataset()
-            self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
-            print("Generate Json complete")
-            with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
-                json.dump(self.mapping_dict, fp, indent=2)
-        else:
-            with open(os.path.join(data_path,'mapping.json'), 'r') as fp:
-                self.mapping_dict = json.load(fp)
-        #
+        train_dataframe,test_dataframe=self._load_dataset()
+        self.mapping_dict=MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
+        print("Generate Json complete")
+        # save
+        with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
+            json.dump(self.mapping_dict, fp, indent=2)
+        # load
+        with open(os.path.join(data_path,'mapping.json'), 'r') as fp:
+            self.mapping_dict = copy.deepcopy(json.load(fp))
 
     def _load_dataset(self):
         train_dataframe=copy.deepcopy(pd.read_csv(os.path.join(self.data_path,'train.csv')))
@@ -76,7 +75,7 @@ class Preprocessing:
                 npy_dict['crime_targets']=csv_dataframe.pop('우범여부')
                 npy_dict['priority_targets']=csv_dataframe.pop('핵심적발')
                 npy_dict['train_indices'], npy_dict['valid_indices']=self._split_indices(csv_dataframe,npy_dict['priority_targets'])
-            npy_dict['{}_data'.format(data_type)]=self._transform(csv_dataframe,data_type)
+            npy_dict['{}_data'.format(data_type)]=self._transform(csv_dataframe)
         for key in npy_dict.keys():
             if isinstance(npy_dict,DataFrame):
                 npy_dict[key]=npy_dict[key].to_numpy()
@@ -89,7 +88,7 @@ class Preprocessing:
         train_indices,valid_indices=train_test_split(indices,stratify=targets,random_state=self.configs['seed'],test_size=1-self.configs['split_ratio'],train_size=self.configs['split_ratio'])
         return train_indices, valid_indices
 
-    def _transform(self, dataframe:DataFrame, train_or_test)->DataFrame:
+    def _transform(self, dataframe:DataFrame)->np.ndarray:
         rescaler=RescaleNumeric()
         """
         categorical_features = ['통관지세관부호', '신고인부호', '수입자부호', '해외거래처부호', '특송업체부호', 
@@ -101,10 +100,7 @@ class Preprocessing:
         categorical_features = self.mapping_dict.keys()
         numeric_features = ['신고중량(KG)', '과세가격원화금액']
 
-        if train_or_test == 'train':
-          dataframe.drop(['신고일자','신고번호'],axis=1,inplace=True)
-        elif train_or_test == 'test':
-          dataframe.drop(['신고일자'],axis=1,inplace=True)
+        dataframe.drop(['신고일자','신고번호','검사결과코드','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')
 
         dataframe.fillna('Missing', inplace=True)
 
