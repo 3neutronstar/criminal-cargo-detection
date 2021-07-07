@@ -26,7 +26,7 @@ def parse_args(args):
         epilog="python run.py mode")
     
     parser.add_argument(
-        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','eval','record','train_xgboost_crime','train_xgboost_priority','tsne_crime','tsne_priority','tsne_mixed'])
+        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','sj','record','train_xgboost_crime','train_xgboost_priority','tsne_crime','tsne_priority','tsne_mixed'])
     #TRAIN SECTION
     parser.add_argument(
         '--seed', type=int, default=1,

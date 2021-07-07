@@ -12,15 +12,24 @@ def load_dataset(data_path,configs):
         # npy_dict=get_data(data_path,configs)
         preprocessing=Preprocessing(data_path,configs)
         npy_dict=preprocessing.run()
+    if 'sj' in configs['mode']:
+        train_data=np.load(os.path.join(data_path,'sj_train_data.npy'))
+        train_targets=np.load(os.path.join(data_path,'sj_train_targets.npy'))
+        valid_data=np.load(os.path.join(data_path,'sj_valid_data.npy'))
+        valid_targets=np.load(os.path.join(data_path,'sj_valid_targets.npy'))
 
-    npy_dict={
-        'table_data':np.load(os.path.join(data_path,'train_data.npy')),
-        'crime_targets':np.load(os.path.join(data_path,'crime_targets.npy')), # y_1 (0,1)
-        'priority_targets':np.load(os.path.join(data_path,'priority_targets.npy')), #y_2 (0,1,2)
-        'train_indices':np.load(os.path.join(data_path,'train_indices.npy')),
-        'valid_indices':np.load(os.path.join(data_path,'valid_indices.npy')),
-        'test_data':np.load(os.path.join(data_path,'test_data.npy')),
-    }
+        train_dataset=TensorDataset(train_data,train_targets)
+        valid_dataset=TensorDataset(valid_data,valid_targets)
+        return train_dataset,valid_dataset
+    else:    
+        npy_dict={
+            'table_data':np.load(os.path.join(data_path,'train_data.npy')),
+            'crime_targets':np.load(os.path.join(data_path,'crime_targets.npy')), # y_1 (0,1)
+            'priority_targets':np.load(os.path.join(data_path,'priority_targets.npy')), #y_2 (0,1,2)
+            'train_indices':np.load(os.path.join(data_path,'train_indices.npy')),
+            'valid_indices':np.load(os.path.join(data_path,'valid_indices.npy')),
+            'test_data':np.load(os.path.join(data_path,'test_data.npy')),
+        }
     
     if configs['mode'] in ['record','tsne_mixed','tsne_priority','tsne_crime']:
         return npy_dict

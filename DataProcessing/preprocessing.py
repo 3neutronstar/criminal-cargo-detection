@@ -44,7 +44,7 @@ class Preprocessing:
         self.data_path=data_path
         # load mapping dictionary
         train_dataframe,test_dataframe=self._load_dataset()
-        self.mapping_dict = MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고일자', '신고중량(KG)', '과세가격원화금액', '관세율'])()
+        self.mapping_dict = MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고번호', '신고일자', '신고중량(KG)', '과세가격원화금액', '관세율','검사결과코드'])()
         print("Generate Json complete")
         # save
         with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
@@ -105,6 +105,9 @@ class Preprocessing:
             dataframe[column] = rescaler(np.log(dataframe.pop(column).to_numpy()+1).reshape(-1,1))
 
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
+        np_data[:,0] = np_data[:,0]/(np_data[:,0].max())
+        np_data[:,1] = np_data[:,1]/(np_data[:,1].max())
+        np_data[:,2] = np_data[:,2]/(np_data[:,2].max())
 
         dataframe['HS_upper'] = dataframe['HS10단위부호']//100000000
         dataframe['HS_middle'] = dataframe['HS10단위부호']//1000000%100
