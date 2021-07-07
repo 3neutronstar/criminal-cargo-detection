@@ -11,7 +11,7 @@ class RecordData:
     def __init__(self,data_path,save_path,current_path,configs):
         self.configs=configs
         self.save_path=save_path
-        self.test_csv=pd.read_csv(os.path.join(data_path,'test.csv'))
+        self.test_csv=copy.deepcopy(pd.read_csv(os.path.join(data_path,'test.csv')))
         from DataProcessing.load_data import load_dataset
         self.npy_dict=load_dataset(data_path,configs)
         self.data_loader=DataLoader(torch.from_numpy(self.npy_dict['test_data']).float())
