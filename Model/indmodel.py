@@ -7,18 +7,19 @@ class CrimeModel(nn.Module):
         self.model=nn.Sequential(
             nn.Linear(input_space,6000),
             nn.BatchNorm1d(6000),#5000),
-            nn.ReLU(),
+            nn.ELU(),
             nn.Linear(6000,3000),
-            nn.Dropout(0.3),
             nn.BatchNorm1d(3000),
-            nn.ReLU(),
+            nn.ELU(),
+            nn.Dropout(0.5),
             nn.Linear(3000,1000),
-            nn.Dropout(0.3),
             nn.BatchNorm1d(1000),
-            nn.ReLU(),
+            nn.ELU(),
+            nn.Dropout(0.5),
             nn.Linear(1000,450),
             nn.BatchNorm1d(450),
-            nn.ReLU(),
+            nn.ELU(),
+            nn.Dropout(0.5),
             nn.Linear(450,output_space)
         )
         self.criterion=nn.CrossEntropyLoss()
@@ -54,18 +55,19 @@ class PriorityModel(nn.Module):
         self.model=nn.Sequential(
             nn.Linear(input_space,6000),
             nn.BatchNorm1d(6000),#5000),
-            nn.ReLU(),
+            nn.ELU(),
             nn.Linear(6000,3000),
-            nn.Dropout(0.3),
             nn.BatchNorm1d(3000),
-            nn.ReLU(),
+            nn.ELU(),
+            nn.Dropout(0.5),
             nn.Linear(3000,1000),
-            nn.Dropout(0.3),
             nn.BatchNorm1d(1000),
-            nn.ReLU(),
+            nn.ELU(),
+            nn.Dropout(0.5),
             nn.Linear(1000,450),
             nn.BatchNorm1d(450),
-            nn.ReLU(),
+            nn.ELU(),
+            nn.Dropout(0.5),
             nn.Linear(450,output_space)
         )
         self.criterion=nn.CrossEntropyLoss()
