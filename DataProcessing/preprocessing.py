@@ -109,11 +109,12 @@ class Preprocessing:
         np_data[:,1] = np_data[:,1]/(np_data[:,1].max())
         np_data[:,2] = np_data[:,2]/(np_data[:,2].max())
 
-        dataframe['HS_upper'] = dataframe['HS10단위부호']//100000000
-        dataframe['HS_middle'] = dataframe['HS10단위부호']//1000000%100
-            
+        dataframe['HS_upper'] = dataframe['HS10단위부호'].astype(str).str.slice(start = 0, stop = 2)
+        dataframe['HS_middle'] = dataframe['HS10단위부호'].astype(str).str.slice(start = 2, stop = 4)
+
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','HS10단위부호'],axis=1,inplace=True,errors='ignore')
         
+
         len_df = len(dataframe.index)
         
         for i,column in enumerate(categorical_features):
@@ -123,7 +124,7 @@ class Preprocessing:
             dict_col = self.mapping_dict[column]
             np_count_ratio = np.zeros((len_df,2))
 
-            max_ohe = len(dict_col.keys())
+            max_ohe = len(dict_col.keys())+2
             encoding_digits = find_digits(max_ohe) 
             np_encoding = np.zeros((len_df,encoding_digits))
 
