@@ -112,41 +112,36 @@ class Preprocessing:
         dataframe['HS_upper'] = dataframe['HS10단위부호'].astype(str).str.slice(start = 0, stop = 2)
         dataframe['HS_middle'] = dataframe['HS10단위부호'].astype(str).str.slice(start = 2, stop = 4)
 
-        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','HS10단위부호'],axis=1,inplace=True,errors='ignore')
-        
+        dataframe = dataframe[categorical_features]
 
         len_df = len(dataframe.index)
         
-        for i,column in enumerate(categorical_features):
-            if column not in dataframe.columns:
-                continue
-            dataframe[column] = dataframe[column].map(str)
-            dict_col = self.mapping_dict[column]
-            np_count_ratio = np.zeros((len_df,2))
-
-            max_ohe = len(dict_col.keys())+2
-            encoding_digits = find_digits(max_ohe) 
-            np_encoding = np.zeros((len_df,encoding_digits))
+        for i, column in enumerate(categorical_features):
+            # string type으로 변환
+            dataframe = dataframe.astype({column: 'str'})
+            
+            dict_col = self.mapping_dict[column] # 딕셔너리 - column 값의 value
+            np_count_ratio = np.zeros((len_df,2)) # 우범 횟수, 우범 비율을 저장할 ndarray
 
             for row in dataframe[column].index: 
-                val_data = dataframe[column][row]
-                np_count_ratio[row][0] = dict_col[val_data]['count']
-                np_count_ratio[row][1] = dict_col[val_data]['ratio']
-
-                x = binary_transform(dict_col[val_data]['onehot']) 
-                len_x = len(x) 
-                for idx in range(len_x): 
-                  if x[idx]=='1':
-                    np_encoding[row][idx] = x[idx]
+                val_data = dataframe[column][row]  # 주어진 data의 값
+                np_count_ratio[row][0] = dict_col[val_data]['count'] # 우범 횟수
+                np_count_ratio[row][1] = dict_col[val_data]['ratio'] # 우범 비율
+                np_column = dataframe[column].to_numpy() # column을 넘파이로 변환
+                if dict_col[val_data]['is_mask']==True: # masking 값 처리
+                    np_column[row] = 'masking'
                     
-            np_count_ratio[:,0] = np_count_ratio[:,0]/(np_count_ratio[:,0].max())
-            np_count_ratio[:,1] = np_count_ratio[:,1]/(np_count_ratio[:,1].max())
-            np_encoding = np_encoding[:,::-1]
+            np_ohe = pd.get_dummies(np_column).to_numpy() # column에 대해 원 핫 인코딩 적용           
 
-            np_concat = np.concatenate((np_count_ratio, np_encoding),axis=1)
-            np_data = np.concatenate((np_data,np_concat), axis=1)
+            # 정규화
+            np_count_ratio[:,0] = (np_count_ratio[:,0] - np_count_ratio[:,0].min())/(np_count_ratio[:,0].max() - np_count_ratio[:,0].min())
+            #np_count_ratio[:,1] = np_count_ratio[:,1]/(np_count_ratio[:,1].max())
             
+            # 우범 횟수, 우범 비율, 원 핫 인코딩 ndarray concatenate
+            np_concat = np.concatenate((np_count_ratio,np_ohe), axis=1)
+            np_data = np.concatenate((np_data,np_concat), axis=1)
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
+            print(f' [ {column: <9}\t] : {len(np.unique(np_column[:]))}, {np_column[:].dtype}')
         print("After transform shape",np_data.shape)
         #print(np_data.columns)
         return np_data
