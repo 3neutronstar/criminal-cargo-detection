@@ -90,7 +90,7 @@ class CrossEntropyLoss_weighted(nn.Module):
 
     def forward(self,inputs,targets):
         losses=self.crossentropy(inputs,targets)
-        loss=losses[targets==0].mean()+losses[targets==1].mean()
+        loss=(losses[targets==0].mean()*(targets==1).sum()+losses[targets==1].mean()*(targets==0).sum())/targets.size(0)
 
         return loss
         
