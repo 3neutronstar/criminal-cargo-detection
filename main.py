@@ -44,7 +44,7 @@ def parse_args(args):
         '--num_workers', type=int, default=3,
         help='number of process you have')
     parser.add_argument(
-        '--lr', type=float, default=0.01,
+        '--lr', type=float, default=0.001,
         help='set learning rate')
     parser.add_argument(
         '--weight_decay', type=float, default=5e-4,

@@ -122,7 +122,7 @@ class Preprocessing:
             np_encoding = np_encoding[:,::-1]
             np_concat = np.concatenate((np_count_ratio, np_encoding),axis=1)
             np_data = np.concatenate((np_data,np_concat), axis=1)
-            np_data = np.concatenate((np_data,np_count_ratio), axis=1)
+            # np_data = np.concatenate((np_data,np_count_ratio), axis=1)
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
         print("After transform shape",np_data.shape)
         #print(np_data.columns)
