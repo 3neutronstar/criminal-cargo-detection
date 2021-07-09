@@ -95,8 +95,8 @@ class Preprocessing:
         np_data[:,0] = np_data[:,0]/(np_data[:,0].max())
         np_data[:,1] = np_data[:,1]/(np_data[:,1].max())
         np_data[:,2] = np_data[:,2]/(np_data[:,2].max())
-        dataframe['HS_upper'] = dataframe['HS10단위부호'].astype(str).str.slice(start = 0, stop = 2)
-        dataframe['HS_middle'] = dataframe['HS10단위부호'].astype(str).str.slice(start = 2, stop = 4)
+        # dataframe['HS_upper'] = dataframe['HS10단위부호'].astype(str).str.slice(start = 0, stop = 2)
+        # dataframe['HS_middle'] = dataframe['HS10단위부호'].astype(str).str.slice(start = 2, stop = 4)
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','HS10단위부호'],axis=1,inplace=True,errors='ignore')
         len_df = len(dataframe.index)
         for i,column in enumerate(categorical_features):
@@ -122,8 +122,6 @@ class Preprocessing:
             np_encoding = np_encoding[:,::-1]
             np_concat = np.concatenate((np_count_ratio, np_encoding),axis=1)
             np_data = np.concatenate((np_data,np_concat), axis=1)
-            # np_data = np.concatenate((np_data,np_count_ratio), axis=1)
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
         print("After transform shape",np_data.shape)
-        #print(np_data.columns)
         return np_data
