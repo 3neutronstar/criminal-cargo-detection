@@ -32,7 +32,7 @@ class RecordData:
         print("Model Load Complete")
         self.model.to(self.configs['device'])
 
-        if 'crime' in self.configs['mode'] or 'priority' in self.configs['mode']:
+        if 'mixed' not in self.configs['mode']:
             metric=self.run_ind()
         else: #mixed
             metric=self.run_mix()
@@ -88,8 +88,19 @@ class RecordData:
         return
         
     def _load_model(self):
-        dict_model=torch.load(os.path.join(self.save_path,self.configs['file_name'],'best_model.pt'))
-        self.model.load_model(dict_model)
+        if 'mixed' not in self.configs['mode']:
+            dict_model=torch.load(os.path.join(self.save_path,self.configs['file_name'],'best_{}_model.pt').format(self.configs['mode'].split('_')[1]))
+            self.model.load_model(dict_model)
+        else: 
+            crime_dict=torch.load(os.path.join(self.save_path,self.configs['file_name'],'best_crime_model.pt'))
+            priority_dict=torch.load(os.path.join(self.save_path,self.configs['file_name'],'best_priority_model.pt'))
+            print("========== Performances ==========")
+            print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['crime']['f1score'],crime_dict['crime']['accuracy']))
+            print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['priority']['f1score'],priority_dict['priority']['accuracy']))
+            print("==================================")
+            dict_model={**crime_dict,**priority_dict}
+            self.model.load_model(dict_model)
+        
 
     def save_models(self,epoch, score_dict):
         dict_model={

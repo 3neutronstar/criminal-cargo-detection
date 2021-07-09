@@ -10,8 +10,8 @@ class MixedLearner(TorchLearner):
             'crime':copy.deepcopy(self.score_dict),
             'priority':copy.deepcopy(self.score_dict),
         }
-        self.best_f1score=[0.0,0.0]
-        self.best_acc=[0.0,0.0]
+        self.best_f1score={'crime':0.0,'priority':0.0}
+        self.best_acc={'crime':0.0,'priority':0.0}
     
     def _train(self,epoch,score_dict):
         self.model.train()
@@ -100,3 +100,21 @@ class MixedLearner(TorchLearner):
             self.metric['priority']['predictions']=torch.cat((self.metric['priority']['predictions'],priority_predictions),dim=0)
             self.metric['priority']['targets']=torch.cat((self.metric['priority']['targets'],priority_targets),dim=0)
             
+    def _epoch_end_logger(self,epoch,score_dict,mode='train'):
+        
+        for model_type in ['crime','priority']:
+            this_score_dict=score_dict[model_type]
+            self._write_logger(epoch,model_type,this_score_dict,mode)
+        if mode=='eval':
+            for model_type in ['crime','priority']:
+                if self.best_f1score[model_type]<score_dict[model_type]['f1score']:
+                    self.best_f1score[model_type]=score_dict[model_type]['f1score']
+                    self.best_acc[model_type]=score_dict[model_type]['accuracy']
+                    self.save_models(epoch,score_dict,model_type)
+    
+    def load_model(self):
+        crime_dict=torch.load(self.save_path,self.configs['file_name'],'best_crime_model.pt')
+        priority_dict=torch.load(self.save_path,self.configs['file_name'],'best_priority_model.pt')
+        dict_model={'crime':crime_dict,'priority':priority_dict}
+        self.model.load_model(dict_model)
+        

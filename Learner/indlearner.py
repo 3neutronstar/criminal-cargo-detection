@@ -76,9 +76,9 @@ class TorchLearner(BaseLearner):
             self.logger.info('[Mode {}] [Best Acc {:.2f}] [Best F1 {:.3f}]'.format(self.configs['mode'],self.best_acc,self.best_f1score))
         else:
             self.logger = logging.getLogger('best')
-            self.logger.info('[Mode {}] [Best Crime Acc {:.2f}] [Best Crime F1 {:.3f}]'.format(self.configs['mode'],self.best_acc[0],self.best_f1score[0]))
-            self.logger.info('[Mode {}] [Best Priority Acc {:.2f}] [Best Priority F1 {:.3f}]'.format(self.configs['mode'],self.best_acc[1],self.best_f1score[1]))
-            advantage_score=0.5*self.best_f1score[0]+0.5*self.best_f1score[1]
+            self.logger.info('[Mode {}] [Best Crime Acc {:.2f}] [Best Crime F1 {:.3f}]'.format(self.configs['mode'],self.best_acc['crime'],self.best_f1score['crime']))
+            self.logger.info('[Mode {}] [Best Priority Acc {:.2f}] [Best Priority F1 {:.3f}]'.format(self.configs['mode'],self.best_acc['priority'],self.best_f1score['priority']))
+            advantage_score=0.5*self.best_f1score['crime']+0.5*self.best_f1score['priority']
             self.logger.info('[Advantage Score] {}'.format(advantage_score))
 
         print('==End==')
@@ -160,43 +160,26 @@ class TorchLearner(BaseLearner):
 
         return score_dict
 
-    def save_models(self,epoch, score_dict):
+    def save_models(self,epoch, score_dict,model_type):
         dict_model= self.model.save_model(epoch,score_dict)
         torch.save(dict_model,
-        os.path.join(self.save_path,self.time_data,'best_model.pt'))
+        os.path.join(self.save_path,self.time_data,'best_{}_model.pt'.format(model_type)))
 
     def load_model(self):
-        dict_model=torch.load(self.save_path,self.configs['file_name'],'best_model.pt')
+        dict_model=torch.load(self.save_path,self.configs['file_name'],'best_{}_model.pt'.format(self.configs['mode'].split('_')[1]))
         self.model.load_model(dict_model)
 
     def _get_score(self,predictions,targets,score_dict):
         score_dict=calc_score(predictions,targets,score_dict)
         return score_dict
-    
-    def _epoch_end_logger(self,epoch,score_dict,mode='train'):
         
-        if 'mixed' in self.configs['mode']:
-            for model_type in ['crime','priority']:
-                this_score_dict=score_dict[model_type]
-                self._write_logger(epoch,model_type,this_score_dict,mode)
-            if mode=='eval':
-                save=False
-                for i,model_type in enumerate(['crime','priority']):
-                    if self.best_f1score[i]<score_dict[model_type]['f1score']:
-                        save=True
-                        self.best_f1score[i]=score_dict[model_type]['f1score']
-                        self.best_acc[i]=score_dict[model_type]['accuracy']
-                if save==True:
-                    self.save_models(epoch,score_dict)
-                    
-
-        else:
-            if mode=='eval':
-                if self.best_f1score<score_dict['f1score']:
-                    self.best_f1score=score_dict['f1score']
-                    self.best_acc=score_dict['accuracy']
-                    self.save_models(epoch,score_dict)
-            self._write_logger(epoch,self.configs['mode'].split('_')[1],score_dict,mode)
+    def _epoch_end_logger(self,epoch,score_dict,mode='train'):
+        if mode=='eval':
+            if self.best_f1score<score_dict['f1score']:
+                self.best_f1score=score_dict['f1score']
+                self.best_acc=score_dict['accuracy']
+                self.save_models(epoch,score_dict,self.configs['mode'].split('_')[1])
+        self._write_logger(epoch,self.configs['mode'].split('_')[1],score_dict,mode)
 
     def _write_logger(self,epoch,model_type,score_dict,mode):
         self.logger=logging.getLogger('{}'.format(mode))
