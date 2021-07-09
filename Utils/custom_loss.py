@@ -81,3 +81,16 @@ class FocalLoss(nn.Module):
         loss = -1 * (1-pt)**self.gamma * logpt
         if self.size_average: return loss.mean()
         else: return loss.sum()
+
+
+class CrossEntropyLoss_weighted(nn.Module):
+    def __init__(self):
+        super(CrossEntropyLoss_weighted,self).__init__()
+        self.crossentropy=nn.CrossEntropyLoss(reduction='none')
+
+    def forward(self,inputs,targets):
+        losses=self.crossentropy(inputs,targets)
+        loss=(losses[targets==0].mean()*(targets==1).sum()+losses[targets==1].mean()*(targets==0).sum())/targets.size(0)
+
+        return loss
+        
