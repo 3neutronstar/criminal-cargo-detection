@@ -72,7 +72,7 @@ def parse_args(args):
             help='read file name')
     elif parser.parse_known_args(args)[0].mode.lower()=='gen_data' or parser.parse_known_args(args)[0].preprocess==True:
         parser.add_argument(
-            '--split_ratio', '-sr',type=float, default=0.75,
+            '--split_ratio', '-sr',type=float, default=0.95,
             help='split ratio for training_set')
 
     # custom loss dependancy
