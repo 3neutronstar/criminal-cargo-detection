@@ -7,7 +7,7 @@ df = pd.read_csv('./data/custom_contest/train.csv')
 print(df.head())
 
 def preprocessing(df):
-    df = df.drop(columns=['신고번호', '신고일자', '검사결과코드', ])#'우범여부', '핵심적발'])
+    df = df.drop(columns=['신고번호', '신고일자'])#, '검사결과코드', ])#'우범여부', '핵심적발'])
     
     print(df.keys())
     for key in df.keys():
@@ -22,12 +22,7 @@ def preprocessing(df):
     if True: # 관세율
         df['관세율_categorical'] = df['관세율'].map(str)
 
-    if True: # HS10단위부호
-        #df['HS10단위부호_12'] = df['HS10단위부호'].map(lambda x: str(x//100000000))
-        #df['HS10단위부호_34'] = df['HS10단위부호'].map(lambda x: str((x//1000000)%100))
-        #df['HS10단위부호_56'] = df['HS10단위부호'].map(lambda x: str((x//10000)%100))
-        #df = df.drop(columns=['HS10단위부호'])
-        pass
+
 
     label = df['우범여부']
     for column in categorical_cutting_features:
@@ -50,9 +45,9 @@ def preprocessing(df):
                 submit_dict[key] = np.array((submit_dict[key], np.int64(0)))
         # 우범횟수의 지분 낮은것 cutting
         if column in ['신고인부호', '해외거래처부호', 'HS10단위부호']:
-            cnt = 20#10
+            cnt = 10#10
         else:        #'수입자부호'
-            cnt = 30#15
+            cnt = 20#15
         filtered_count = filter(lambda x: x[1][0] >= cnt, submit_dict.items())
         # 비율이 아주낮거나 높으면 살림
         #filtered_ratio = filter(lambda x: x[1][0] <= cnt and x[1][0] >= 6 and (x[1][1]/x[1][0] <= 0.15 or x[1][1]/x[1][0] >= 0.7), submit_dict.items())
@@ -62,12 +57,19 @@ def preprocessing(df):
         
         if column == 'HS10단위부호':
             df[column] = df[column].map(lambda x: x if x in filtered_features else 0)
-            df[column] = df[column].map(str)
+            #df[column] = df[column].map(str)
         else:
             df[column] = df[column].map(lambda x: x if x in filtered_features else 'rare')
 
+
         print(f'{column} : {len(df[column].unique())}')
 
+    if True: # HS10단위부호
+        df['HS10단위부호_12'] = df['HS10단위부호'].map(lambda x: str(x//100000000))
+        df['HS10단위부호_34'] = df['HS10단위부호'].map(lambda x: str((x//1000000)%100))
+        #df['HS10단위부호_56'] = df['HS10단위부호'].map(lambda x: str((x//10000)%100))
+        df = df.drop(columns=['HS10단위부호'])
+        pass
 
     for column in categorical_features:
         df[column] = df[column].map(str)

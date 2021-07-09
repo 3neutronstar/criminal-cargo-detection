@@ -54,8 +54,8 @@ class MappingJsonGenerator():
                     c_idx += 1
 
                 self.dictionary[self.column_list[i]][c] = {}
-                self.dictionary[self.column_list[i]][c]['count'] = int(total_count[assign_idx])
-                self.dictionary[self.column_list[i]][c]['ratio'] = float(crime_ratio[assign_idx])
+                self.dictionary[self.column_list[i]][c]['count'] = 1#int(total_count[assign_idx]) # c_idx와 crime_count확인.
+                self.dictionary[self.column_list[i]][c]['ratio'] = 1#float(crime_ratio[assign_idx])
                 self.dictionary[self.column_list[i]][c]['onehot'] = int(assign_idx)
                 
         return self.dictionary
