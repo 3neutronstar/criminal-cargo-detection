@@ -110,8 +110,8 @@ class Preprocessing:
             np_encoding = np.zeros((len_df,encoding_digits))
             for row in dataframe[column].index: 
                 val_data = dataframe[column][row]
-                np_count_ratio[row][0] = dict_col[val_data]['count']
-                np_count_ratio[row][1] = dict_col[val_data]['ratio']
+                np_count_ratio[row][0] = dict_col[val_data]['crime_count']
+                np_count_ratio[row][1] = dict_col[val_data]['crime_ratio']
                 np_count_ratio[row][2] = dict_col[val_data]['priority_ratio']
                 x = binary_transform(dict_col[val_data]['onehot']) 
                 len_x = len(x) 

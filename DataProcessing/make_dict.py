@@ -38,7 +38,7 @@ class MappingJsonGenerator():
     
     def forward(self):
         train_np, test_np = np.array(self.train_csv, dtype = str), np.array(self.test_csv, dtype = str)
-        
+
         print(train_np.shape,test_np.shape)
         for i, col in enumerate(self.column_list):
             self.dictionary[col] = {}
@@ -46,9 +46,11 @@ class MappingJsonGenerator():
             total_code, total_count = np.unique(concat, return_counts=True)
             crime_code, crime_count = np.unique(train_np[:, i][self.crime_idx], return_counts=True)
 
-            total_priority_code, total_priority_count = np.unique(np.concatenate((train_np[:, i][self.priority_idx],train_np[:, i][self.non_priority_idx]),axis=0), return_counts=True)
+            _, total_priority_count = np.unique(np.concatenate((train_np[:, i][self.priority_idx],train_np[:, i][self.non_priority_idx]),axis=0), return_counts=True)
             priority_code, priority_count = np.unique(train_np[:, i][self.priority_idx], return_counts=True)
+
             crime_ratio = np.empty((total_count.shape[0], ))
+            
             priority_ratio = np.empty((total_count.shape[0], ))
 
             c_idx = 0
@@ -61,9 +63,17 @@ class MappingJsonGenerator():
                     c_idx += 1
 
                 self.dictionary[col][c] = {}
-                self.dictionary[col][c]['count'] = int(total_count[assign_idx])
-                self.dictionary[col][c]['ratio'] = float(crime_ratio[assign_idx])
+                self.dictionary[col][c]['total_count'] = int(total_count[assign_idx])
+                self.dictionary[col][c]['crime_count'] = int(crime_count[c_idx-1])
+                self.dictionary[col][c]['crime_ratio'] = float(crime_ratio[assign_idx])
                 self.dictionary[col][c]['onehot'] = int(assign_idx)
+            
+            crime_concat = np.concatenate([crime_ratio.reshape(-1, 1), total_code.reshape(-1, 1)], axis = 1)
+            crime_concat = np.array(sorted(crime_concat, key = lambda x : x[0], reverse=True))
+
+            for i, c in enumerate(crime_concat[:, 1]):
+                self.dictionary[col][c]['sorted_crime_onehot'] = int(i)
+                
             for assign_idx,p in enumerate(total_code):
                 if p not in priority_code: 
                     priority_ratio[assign_idx] = 0.
@@ -72,5 +82,13 @@ class MappingJsonGenerator():
                     priority_ratio[assign_idx] = np.round(priority_count[p_idx] / total_priority_count[assign_priority_idx], 4)
                     p_idx += 1
                 self.dictionary[col][p]['priority_ratio'] = float(priority_ratio[assign_idx])
+
+            priority_concat = np.concatenate([priority_ratio.reshape(-1, 1), total_code.reshape(-1, 1)], axis = 1)
+            priority_concat = np.array(sorted(priority_concat, key = lambda x : x[0], reverse=True))
+
+            for i, c in enumerate(priority_concat[:, 1]):
+                self.dictionary[col][c]['sorted_priority_onehot'] = int(i)
+
+            
                 
         return self.dictionary
