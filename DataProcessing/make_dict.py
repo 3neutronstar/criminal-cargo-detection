@@ -21,6 +21,7 @@ class MappingJsonGenerator():
         self.train_csv['관세율구분코드_1자리']=self.train_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
         self.test_csv['관세율구분코드_1자리']=self.test_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
         self.train_csv.drop('관세율구분코드',axis=1,inplace=True)
+        self.test_csv.drop('관세율구분코드',axis=1,inplace=True)
         # self.train_csv = self.train_csv.drop(['HS10단위부호'], axis = 1)
         # self.test_csv = self.test_csv.drop(['HS10단위부호'], axis = 1)
 
