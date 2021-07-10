@@ -66,7 +66,8 @@ def preprocessing(df):
 
     if True: # HS10단위부호
         df['HS10단위부호_12'] = df['HS10단위부호'].map(lambda x: str(x//100000000))
-        df['HS10단위부호_34'] = df['HS10단위부호'].map(lambda x: str((x//1000000)%100))
+        df['HS10단위부호_1234'] = df['HS10단위부호'].map(lambda x: str(x//1000000))
+        #df['HS10단위부호_34'] = df['HS10단위부호'].map(lambda x: str((x//1000000)%100))
         #df['HS10단위부호_56'] = df['HS10단위부호'].map(lambda x: str((x//10000)%100))
         df = df.drop(columns=['HS10단위부호'])
         pass
