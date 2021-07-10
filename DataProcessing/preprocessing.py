@@ -11,6 +11,8 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from pandas.core.frame import DataFrame
 from DataProcessing.make_dict import MappingJsonGenerator
+
+
 def find_digits(x):
     temp = math.log2(x)
     if temp == math.floor(temp):
@@ -18,6 +20,8 @@ def find_digits(x):
     else:
         n = math.floor(temp) + 1
     return int(n)
+
+
 def binary_transform(x):
     if x == 0:
         return '0'
@@ -27,12 +31,16 @@ def binary_transform(x):
             x, mod = divmod(x,2)
             binary += str(mod)
         return binary
+
+
 class RescaleNumeric:
     def __init__(self):
         self.minmax_scale=preprocessing.MinMaxScaler(feature_range=(0,1))
     def __call__(self,x):
         x_scale=self.minmax_scale.fit_transform(np.log(x+1))
         return x_scale
+
+
 class Preprocessing:
     def __init__(self,data_path,configs):
         self.configs=configs
@@ -47,10 +55,12 @@ class Preprocessing:
         # load
         with open(os.path.join(data_path,'mapping.json'), 'r') as fp:
             self.mapping_dict = copy.deepcopy(json.load(fp))
+
     def _load_dataset(self):
         train_dataframe=copy.deepcopy(pd.read_csv(os.path.join(self.data_path,'train.csv')))
         test_dataframe=copy.deepcopy(pd.read_csv(os.path.join(self.data_path,'test.csv')))
         return train_dataframe,test_dataframe
+
     def run(self) ->dict:
         npy_dict={}
         #load dataset
@@ -73,10 +83,12 @@ class Preprocessing:
                 npy_dict[key]=npy_dict[key].to_numpy()
             np.save(os.path.join(self.data_path,'{}.npy'.format(key)),npy_dict[key])
         return npy_dict
+
     def _split_indices(self,dataframe:DataFrame,targets:np.ndarray)->np.ndarray:
         indices=np.arange(len(dataframe))
         train_indices,valid_indices=train_test_split(indices,stratify=targets,random_state=self.configs['seed'],test_size=1-self.configs['split_ratio'],train_size=self.configs['split_ratio'])
         return train_indices, valid_indices
+
     def _transform(self, dataframe:DataFrame)->np.ndarray:
         rescaler=RescaleNumeric()
         """
@@ -95,9 +107,12 @@ class Preprocessing:
         np_data[:,0] = np_data[:,0]/(np_data[:,0].max()+1e-10)
         np_data[:,1] = np_data[:,1]/(np_data[:,1].max()+1e-10)
         np_data[:,2] = np_data[:,2]/(np_data[:,2].max()+1e-10)
-        dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000
-        dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000
+        dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
+        dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
+        dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','HS10단위부호'],axis=1,inplace=True,errors='ignore')
+        print(dataframe['F' in dataframe['관세율구분코드']])
+        exit()
         len_df = len(dataframe.index)
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
@@ -118,10 +133,13 @@ class Preprocessing:
                 for idx in range(len_x): 
                   if x[idx]=='1':
                     np_encoding[row][idx] = x[idx]
+
+            # normalizing count
             np_count_ratio[:,0] = (np_count_ratio[:,0]-np_count_ratio[:,0].mean())/(np_count_ratio[:,0].var())
+
             np_encoding = np_encoding[:,::-1]
-            np_concat = np.concatenate((np_count_ratio, np_encoding),axis=1)
-            np_data = np.concatenate((np_data,np_concat), axis=1)
+            np_data = np.concatenate((np_data,np_count_ratio, np_encoding), axis=1)
+
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
         print("After transform shape",np_data.shape)
         return np_data

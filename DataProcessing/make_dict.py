@@ -12,9 +12,11 @@ class MappingJsonGenerator():
         
         self.train_csv['HS_upper'] = self.train_csv['HS10단위부호'] // 100000000
         self.train_csv['HS_middle'] = self.train_csv['HS10단위부호'] // 1000000
+        self.train_csv['HS_low'] = self.train_csv['HS10단위부호'] // 10000
 
         self.test_csv['HS_upper'] = self.test_csv['HS10단위부호'] // 100000000
         self.test_csv['HS_middle'] = self.test_csv['HS10단위부호'] // 1000000
+        self.test_csv['HS_low'] = self.test_csv['HS10단위부호'] // 10000
 
         self.train_csv = self.train_csv.drop(['HS10단위부호'], axis = 1)
         self.test_csv = self.test_csv.drop(['HS10단위부호'], axis = 1)
@@ -89,6 +91,4 @@ class MappingJsonGenerator():
             for i, c in enumerate(priority_concat[:, 1]):
                 self.dictionary[col][c]['sorted_priority_onehot'] = int(i)
 
-            
-                
         return self.dictionary
