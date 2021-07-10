@@ -110,7 +110,9 @@ class Preprocessing:
         dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
         dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
-        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','HS10단위부호'],axis=1,inplace=True,errors='ignore')
+        dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
+
+        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:

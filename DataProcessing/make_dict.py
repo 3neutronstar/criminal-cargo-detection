@@ -7,8 +7,8 @@ class MappingJsonGenerator():
         self.drop_list = drop_list
         self.crime = np.array(train_csv['우범여부'])
         self.priority = np.array(train_csv['핵심적발'])
-        self.train_csv = train_csv.drop(['우범여부', '핵심적발'] + self.drop_list, axis = 1,errors='ignore')
-        self.test_csv = test_csv.drop(self.drop_list, axis = 1,errors='ignore')
+        train_csv.drop(['우범여부', '핵심적발'] + self.drop_list, axis = 1,errors='ignore',inplace=True)
+        test_csv.drop(self.drop_list, axis = 1,errors='ignore',inplace=True)
         
         self.train_csv['HS_upper'] = self.train_csv['HS10단위부호'] // 100000000
         self.train_csv['HS_middle'] = self.train_csv['HS10단위부호'] // 1000000
@@ -18,8 +18,11 @@ class MappingJsonGenerator():
         self.test_csv['HS_middle'] = self.test_csv['HS10단위부호'] // 1000000
         self.test_csv['HS_low'] = self.test_csv['HS10단위부호'] // 10000
 
-        self.train_csv = self.train_csv.drop(['HS10단위부호'], axis = 1)
-        self.test_csv = self.test_csv.drop(['HS10단위부호'], axis = 1)
+        self.train_csv['관세율구분코드_1자리']=self.train_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
+        self.test_csv['관세율구분코드_1자리']=self.test_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
+        self.train_csv.drop('관세율구분코드',axis=1,inplace=True)
+        # self.train_csv = self.train_csv.drop(['HS10단위부호'], axis = 1)
+        # self.test_csv = self.test_csv.drop(['HS10단위부호'], axis = 1)
 
         # self.train_hs_upper_code = np.array([s // 100000000 for s in self.train_hs_code]).reshape(-1, 1)
         # self.test_hs_upper_code = np.array([s // 100000000 for s in self.test_hs_code]).reshape(-1, 1)
