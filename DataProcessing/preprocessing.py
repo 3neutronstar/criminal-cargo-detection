@@ -96,8 +96,8 @@ class Preprocessing:
         np_data[:,1] = np_data[:,1]/(np_data[:,1].max()+1e-10)
         np_data[:,2] = np_data[:,2]/(np_data[:,2].max()+1e-10)
         dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000
-        dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000
-        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','HS10단위부호'],axis=1,inplace=True,errors='ignore')
+        dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000     
+        dataframe = dataframe[categorical_features]
         len_df = len(dataframe.index)
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
@@ -123,5 +123,30 @@ class Preprocessing:
             np_concat = np.concatenate((np_count_ratio, np_encoding),axis=1)
             np_data = np.concatenate((np_data,np_concat), axis=1)
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
+        
+        """
+        for i, column in enumerate(categorical_features):
+            dataframe[column] = dataframe[column].map(str)
+            dict_col = self.mapping_dict[column]
+            np_count_ratio = np.zeros((len_df,3))
+
+            for row in dataframe[column].index: 
+                val_data = dataframe[column][row]  
+                np_count_ratio[row][0] = dict_col[val_data]['crime_count']
+                np_count_ratio[row][1] = dict_col[val_data]['crime_ratio']
+                np_count_ratio[row][2] = dict_col[val_data]['priority_ratio']
+                np_column = dataframe[column].to_numpy()
+                if dict_col[val_data]['is_mask']==True:
+                    np_column[row] = 'masking'
+                    
+            np_ohe = pd.get_dummies(np_column).to_numpy()
+            np_count_ratio[:,0] = (np_count_ratio[:,0]-np_count_ratio[:,0].mean())/(np_count_ratio[:,0].var())
+            
+            np_concat = np.concatenate((np_count_ratio,np_ohe), axis=1)
+            np_data = np.concatenate((np_data,np_concat), axis=1)
+            print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
+            print(f' [ {column: <9}\t] : {len(np.unique(np_column[:]))}, {np_column[:].dtype}')
+        """
+        
         print("After transform shape",np_data.shape)
         return np_data
