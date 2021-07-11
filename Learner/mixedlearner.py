@@ -17,10 +17,11 @@ class MixedLearner(TorchLearner):
         self.model.train()
         train_loss=0.0
 
-        for batch_idx, (data,crime_targets,priority_targets) in enumerate(self.train_dataloader):
-            data,crime_targets,priority_targets=data.to(self.configs['device']),crime_targets.to(self.configs['device']),priority_targets.to(self.configs['device'])
+        for batch_idx, (crime_data, priority_data, crime_targets, priority_targets) in enumerate(self.train_dataloader):
+            crime_data, priority_data = crime_data.to(self.configs['device']), priority_data.to(self.configs['device'])
+            crime_targets, priority_targets = crime_targets.to(self.configs['device']), priority_targets.to(self.configs['device'])
 
-            crime_outputs,priority_outputs=self.model(data)
+            crime_outputs,priority_outputs=self.model(crime_data, priority_data)
             crime_loss,priority_loss=self.criterion(crime_outputs,priority_outputs,crime_targets,priority_targets)
             loss=crime_loss+priority_loss
 
@@ -53,17 +54,18 @@ class MixedLearner(TorchLearner):
         score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
         return score_dict
 
-  
+
     def _eval(self,epoch,score_dict):
 
         self.model.eval()
         eval_loss=0.0
 
         with torch.no_grad():
-            for batch_idx,(data,crime_targets,priority_targets) in enumerate(self.test_dataloader):
-                data,crime_targets,priority_targets=data.to(self.configs['device']),crime_targets.to(self.configs['device']),priority_targets.to(self.configs['device'])
-
-                crime_outputs,priority_outputs=self.model(data)
+            for batch_idx,(crime_data,priority_data,crime_targets,priority_targets) in enumerate(self.test_dataloader):
+                crime_data,priority_data=crime_data.to(self.configs['device']),priority_data.to(self.configs['device'])
+                crime_targets,priority_targets=crime_targets.to(self.configs['device']),priority_targets.to(self.configs['device'])
+                
+                crime_outputs,priority_outputs=self.model(crime_data,priority_data)
                 crime_loss,priority_loss=self.criterion(crime_outputs,priority_outputs,crime_targets,priority_targets)
                 crime_predictions=torch.max(crime_outputs,dim=1)[1].clone()
                 priority_predictions=torch.max(priority_outputs,dim=1)[1].clone()

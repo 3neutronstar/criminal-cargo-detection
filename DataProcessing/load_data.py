@@ -6,6 +6,7 @@ import pandas as pd
 from torch.utils.data import DataLoader,TensorDataset
 from torch.utils.data import Subset
 import torch
+
 def load_dataset(data_path,configs):
     # get data
     if configs['preprocess']==True:
@@ -23,7 +24,8 @@ def load_dataset(data_path,configs):
         return train_dataset,valid_dataset
     else:    
         npy_dict={
-            'table_data':np.load(os.path.join(data_path,'train_data.npy')),
+            'train_crime_data':np.load(os.path.join(data_path,'train_crime_data.npy')),
+            'train_priority_data':np.load(os.path.join(data_path,'train_priority_data.npy')),
             'crime_targets':np.load(os.path.join(data_path,'crime_targets.npy')), # y_1 (0,1)
             'priority_targets':np.load(os.path.join(data_path,'priority_targets.npy')), #y_2 (0,1,2)
             'train_indices':np.load(os.path.join(data_path,'train_indices.npy')),
@@ -42,15 +44,15 @@ def load_dataset(data_path,configs):
 
     #data separation
         if 'crime' in configs['mode']:
-            crime_dataset=TensorDataset(npy_dict['table_data'],npy_dict['crime_targets'])
+            crime_dataset=TensorDataset(npy_dict['train_crime_data'],npy_dict['crime_targets'])
             #crime
             train_dataset=Subset(crime_dataset,npy_dict['train_indices'])
             valid_dataset=Subset(crime_dataset,npy_dict['valid_indices'])
 
         elif 'priority' in configs['mode']:
             #priority
-            train_data=npy_dict['table_data'][npy_dict['train_indices'].long()]
-            valid_data=npy_dict['table_data'][npy_dict['valid_indices'].long()]
+            train_data=npy_dict['train_priority_data'][npy_dict['train_indices'].long()]
+            valid_data=npy_dict['train_priority_data'][npy_dict['valid_indices'].long()]
 
             train_target=npy_dict['priority_targets'][npy_dict['train_indices'].long()]
             valid_target=npy_dict['priority_targets'][npy_dict['valid_indices'].long()]
@@ -66,12 +68,12 @@ def load_dataset(data_path,configs):
             train_target[train_target==2]=1
             valid_target[valid_target==1]=0
             valid_target[valid_target==2]=1
-            train_dataset=TensorDataset(train_data,train_target)
-            valid_dataset=TensorDataset(valid_data,valid_target)
+            train_dataset=TensorDataset(train_data, train_target)
+            valid_dataset=TensorDataset(valid_data, valid_target)
 
         elif configs['mode']=='train_mixed':
             #mixed
-            mixed_dataset=TensorDataset(npy_dict['table_data'],npy_dict['crime_targets'],npy_dict['priority_targets'])
+            mixed_dataset=TensorDataset(npy_dict['train_crime_data'],npy_dict['train_priority_data'],npy_dict['crime_targets'],npy_dict['priority_targets'])
             train_dataset=Subset(mixed_dataset,npy_dict['train_indices'])
             valid_dataset=Subset(mixed_dataset,npy_dict['valid_indices'])
 
@@ -82,19 +84,20 @@ def load_dataset(data_path,configs):
 
     else: #XGBOOST
         if 'crime' in configs['mode']:
-            train_data=npy_dict['table_data'][npy_dict['train_indices']]
-            valid_data=npy_dict['table_data'][npy_dict['valid_indices']]
+            train_data=npy_dict['train_crime_data'][npy_dict['train_indices']]
+            valid_data=npy_dict['train_crime_data'][npy_dict['valid_indices']]
 
             train_target=npy_dict['crime_targets'][npy_dict['train_indices']]
             valid_target=npy_dict['crime_targets'][npy_dict['valid_indices']]
+
         elif 'priority' in configs['mode']:
-                
-            train_data=npy_dict['table_data'][npy_dict['train_indices']]
-            valid_data=npy_dict['table_data'][npy_dict['valid_indices']]
+            train_data=npy_dict['train_priority_data'][npy_dict['train_indices']]
+            valid_data=npy_dict['train_priority_data'][npy_dict['valid_indices']]
 
             train_target=npy_dict['priority_targets'][npy_dict['train_indices']]
             valid_target=npy_dict['priority_targets'][npy_dict['valid_indices']]
-        return train_data,train_target,valid_data,valid_target
+
+        return train_data, train_target, valid_data, valid_target
         
 
 def load_dataloader(data_path,configs):
