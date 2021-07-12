@@ -43,7 +43,7 @@ class Preprocessing:
         self.data_path=data_path
         # load mapping dictionary
         train_dataframe,test_dataframe=self._load_dataset()
-        self.mapping_dict = MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고번호', '신고일자', '신고중량(KG)', '과세가격원화금액', '관세율','검사결과코드'])()
+        self.mapping_dict = MappingJsonGenerator(train_dataframe,test_dataframe,'Missing', ['신고번호', '신고일자', '관세율','검사결과코드'])() #'과세가격원화금액', '신고중량(KG)',
         print("Generate Json complete")
         # save
         with open(os.path.join(data_path,'mapping.json'), 'w') as fp:
@@ -96,15 +96,19 @@ class Preprocessing:
         """
         print("Before crime transform shape",dataframe.shape)
         categorical_features = self.mapping_dict.keys()
+        dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
+        dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
+        dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
+        dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
+        dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
         numeric_features = ['신고중량(KG)', '과세가격원화금액', '관세율']
         dataframe.fillna('Missing', inplace=True)
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-        dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
-        dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
-        dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
-        dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
+        np_data[:,0] = np_data[:,0]/(np_data[:,0].max()+1e-10)
+        np_data[:,1] = np_data[:,1]/(np_data[:,1].max()+1e-10)
+        np_data[:,2] = np_data[:,2]/(np_data[:,2].max()+1e-10)
 
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
@@ -155,15 +159,19 @@ class Preprocessing:
         """
         print("Before priority transform shape",dataframe.shape)
         categorical_features = self.mapping_dict.keys()
+        dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
+        dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
+        dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
+        dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
+        dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
         numeric_features = ['신고중량(KG)', '과세가격원화금액']
         dataframe.fillna('Missing', inplace=True)
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-        dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
-        dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
-        dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 6자리
-        dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
+        np_data[:,0] = np_data[:,0]/(np_data[:,0].max()+1e-10)
+        np_data[:,1] = np_data[:,1]/(np_data[:,1].max()+1e-10)
+        np_data[:,2] = np_data[:,2]/(np_data[:,2].max()+1e-10)
 
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
