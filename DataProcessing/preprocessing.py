@@ -101,9 +101,6 @@ class Preprocessing:
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-        np_data[:,0] = np_data[:,0]/(np_data[:,0].max()+1e-10)
-        np_data[:,1] = np_data[:,1]/(np_data[:,1].max()+1e-10)
-        np_data[:,2] = np_data[:,2]/(np_data[:,2].max()+1e-10)
         dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
         dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
@@ -161,11 +158,8 @@ class Preprocessing:
         numeric_features = ['신고중량(KG)', '과세가격원화금액']
         dataframe.fillna('Missing', inplace=True)
         for column in numeric_features:
-            dataframe[column] = rescaler(np.log(dataframe.pop(column).to_numpy()+1).reshape(-1,1))
+            dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-        np_data[:,0] = np_data[:,0]/(np_data[:,0].max()+1e-10)
-        np_data[:,1] = np_data[:,1]/(np_data[:,1].max()+1e-10)
-        np_data[:,2] = np_data[:,2]/(np_data[:,2].max()+1e-10)
         dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
         dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 6자리
