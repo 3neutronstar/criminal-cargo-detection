@@ -30,9 +30,13 @@ def calc_score(predictions, targets,score_dict):
     targets=targets.detach().clone().cpu()
     # print(targets, predictions)
     accuracy = accuracy_score(targets, predictions,)
-    precision = precision_score(targets, predictions,average='macro',zero_division=0)
-    recall = recall_score(targets, predictions,average='macro',zero_division=0)
-    f1 = f1_score(targets, predictions,average='macro',zero_division=0)
+    if targets.unique().size(0)==3:
+        avg='macro'
+    elif targets.unique().size(0)==2:
+        avg='binary'
+    precision = precision_score(targets, predictions,average=avg,zero_division=0)
+    recall = recall_score(targets, predictions,average=avg,zero_division=0)
+    f1 = f1_score(targets, predictions,average=avg,zero_division=0)
     score_dict['total']+=targets.size(0)
     score_dict['accuracy'] = accuracy*100.0
     score_dict['precision'] = precision*100.0
