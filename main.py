@@ -74,7 +74,12 @@ def parse_args(args):
         parser.add_argument(
             '--split_ratio', '-sr',type=float, default=0.95,
             help='split ratio for training_set')
-
+    elif parser.parse_known_args(args)[0].mode.lower()=='train_mixed':
+        parser.add_argument(
+            '--split_dataset','-sd',type=bool,default=False,
+            help='use this option when you use mi'
+        )
+        
     # custom loss dependancy
     if parser.parse_known_args(args)[0].custom_loss.lower()=='kd_loss':
         parser.add_argument(
