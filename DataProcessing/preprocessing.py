@@ -134,9 +134,9 @@ class Preprocessing:
             # regularization count
             np_count_ratio[:,0] = (np_count_ratio[:,0]-np_count_ratio[:,0].mean())/(np_count_ratio[:,0].var())
             # # regularization crime ratio
-            # np_count_ratio[:,1] = (np_count_ratio[:,1]-np_count_ratio[:,1].mean())/(np_count_ratio[:,1].var())
-            # # regulaization priority ratio
-            # np_count_ratio[:,2] = (np_count_ratio[:,2]-np_count_ratio[:,2].mean())/(np_count_ratio[:,2].var())
+            np_count_ratio[:,1] = (np_count_ratio[:,1]-np_count_ratio[:,1].mean())/(np_count_ratio[:,1].var())
+            # regulaization priority ratio
+            np_count_ratio[:,2] = (np_count_ratio[:,2]-np_count_ratio[:,2].mean())/(np_count_ratio[:,2].var())
 
             np_encoding = np_encoding[:,::-1]
             np_data = np.concatenate((np_data,np_count_ratio, np_encoding), axis=1)
