@@ -102,10 +102,30 @@ def load_dataset(data_path,configs):
         
 
 def load_dataloader(data_path,configs):
+
+    # npy_dict={
+    #         'table_data':np.load(os.path.join(data_path,'train_data.npy')),
+    #         'crime_targets':np.load(os.path.join(data_path,'crime_targets.npy')), # y_1 (0,1)
+    #         'priority_targets':np.load(os.path.join(data_path,'priority_targets.npy')), #y_2 (0,1,2)
+    #         'train_indices':np.load(os.path.join(data_path,'train_indices.npy')),
+    #         'valid_indices':np.load(os.path.join(data_path,'valid_indices.npy')),
+    #         'test_data':np.load(os.path.join(data_path,'test_data.npy')),
+    #     }
+    # train_target=npy_dict['crime_targets'][npy_dict['train_indices']]
+
     if 'xgboost' not in configs['mode']:
+        # print('-------------load_dataloader--------------')
+        # class_counts = [66344, 18794]  # [36377, 3755]
+        # num_samples = sum(class_counts)  # 40132
+        # train_labels = train_target.tolist()
+
+        # class_weights = [num_samples/class_counts[i] for i in range(len(class_counts))]
+        # weights = [class_weights[train_labels[i]] for i in range(int(num_samples))]
+        # sampler = torch.utils.data.sampler.WeightedRandomSampler(torch.DoubleTensor(weights), int(num_samples))
+
         train_dataset,valid_dataset=load_dataset(data_path,configs)
-        train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],shuffle=True,num_workers=configs['num_workers'])
-        valid_dataloader=DataLoader(valid_dataset,batch_size=configs['batch_size'],shuffle=False,num_workers=configs['num_workers'])
+        train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],num_workers=configs['num_workers'], shuffle = True)
+        valid_dataloader=DataLoader(valid_dataset,batch_size=configs['batch_size'],num_workers=configs['num_workers'], shuffle = False)
         return train_dataloader,valid_dataloader
     else: #xgboost
         train_data,train_target,valid_data,valid_target = load_dataset(data_path,configs)       

@@ -85,6 +85,8 @@ class MappingJsonGenerator():
                     assign_priority_idx=np.where(priority_code==p)[0]
                     priority_ratio[assign_idx] = np.round(priority_count[p_idx] / total_priority_count[assign_priority_idx], 4)
                     p_idx += 1
+
+                self.dictionary[col][p]['priority_count'] = int(priority_count[p_idx-1])
                 self.dictionary[col][p]['priority_ratio'] = float(priority_ratio[assign_idx])
 
             priority_concat = np.concatenate([priority_ratio.reshape(-1, 1), total_code.reshape(-1, 1)], axis = 1)
