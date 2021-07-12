@@ -96,7 +96,7 @@ class Preprocessing:
         """
         print("Before crime transform shape",dataframe.shape)
         categorical_features = self.mapping_dict.keys()
-        numeric_features = ['신고중량(KG)', '과세가격원화금액']
+        numeric_features = ['신고중량(KG)', '과세가격원화금액', '관세율']
         dataframe.fillna('Missing', inplace=True)
         for column in numeric_features:
             dataframe[column] = rescaler(np.log(dataframe.pop(column).to_numpy()+1).reshape(-1,1))
