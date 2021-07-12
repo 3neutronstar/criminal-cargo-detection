@@ -33,7 +33,7 @@ class RescaleNumeric:
     def __init__(self):
         self.minmax_scale=preprocessing.MinMaxScaler(feature_range=(0,1))
     def __call__(self,x):
-        x_scale=self.minmax_scale.fit_transform(np.log(x+1e-7).reshape(-1,1))
+        x_scale=self.minmax_scale.fit_transform(np.log(x+1).reshape(-1,1))
         return x_scale
 
 
