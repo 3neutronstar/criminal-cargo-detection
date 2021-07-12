@@ -106,9 +106,6 @@ class Preprocessing:
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-        np_data[:,0] = np_data[:,0]/(np_data[:,0].max()+1e-10)
-        np_data[:,1] = np_data[:,1]/(np_data[:,1].max()+1e-10)
-        np_data[:,2] = np_data[:,2]/(np_data[:,2].max()+1e-10)
 
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
@@ -169,9 +166,6 @@ class Preprocessing:
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-        np_data[:,0] = np_data[:,0]/(np_data[:,0].max()+1e-10)
-        np_data[:,1] = np_data[:,1]/(np_data[:,1].max()+1e-10)
-        np_data[:,2] = np_data[:,2]/(np_data[:,2].max()+1e-10)
 
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)

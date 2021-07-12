@@ -24,8 +24,8 @@ class MappingJsonGenerator():
         self.train_csv['단위무게(KG)가격'] = (self.train_csv['과세가격원화금액']/self.train_csv['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
         self.test_csv['단위무게(KG)가격'] = (self.test_csv['과세가격원화금액']/self.test_csv['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
 
-        self.train_csv=self.train_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore')
-        self.test_csv=self.test_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore')
+        self.train_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore',inplace=True)
+        self.test_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore',inplace=True)
 
 
         # self.train_csv = self.train_csv.drop(['HS10단위부호'], axis = 1)
