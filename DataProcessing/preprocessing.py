@@ -116,8 +116,8 @@ class Preprocessing:
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
         
-        add_count_ratio_list=['crime_count','crime_ratio','priority_ratio']
-        reg_count_ratio_list=['crime_count']
+        add_count_ratio_list=['crime_count','total_count']
+        reg_count_ratio_list=['crime_count','total_count']
 
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
@@ -180,8 +180,8 @@ class Preprocessing:
 
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
-        add_count_ratio_list=['crime_count','crime_ratio','priority_ratio']
-        reg_count_ratio_list=['crime_count']
+        add_count_ratio_list=['crime_count','priority_count']
+        reg_count_ratio_list=['crime_count','priority_count']
 
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:

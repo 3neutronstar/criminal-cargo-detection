@@ -3,6 +3,8 @@ import torch
 import numpy as np
 from torch.utils.data import DataLoader
 import os
+
+from torch.utils.data.dataset import TensorDataset
 from Utils.params import load_params
 from Model.basemodel import MODEL
 import copy
@@ -14,10 +16,11 @@ class RecordData:
         self.test_csv=copy.deepcopy(pd.read_csv(os.path.join(data_path,'test.csv')))
         from DataProcessing.load_data import load_dataset
         self.npy_dict=load_dataset(data_path,configs)
-        self.data_loader=DataLoader(torch.from_numpy(self.npy_dict['test_data']).float())
+        test_dataset=TensorDataset(torch.from_numpy(self.npy_dict['test_crime_data']).float(),torch.from_numpy(self.npy_dict['test_priority_data']).float())
+        self.data_loader=DataLoader(test_dataset)
         self.configs=load_params(configs,current_path,configs['file_name'])
         self.configs['file_name']=configs['file_name']
-        self.input_space=len(self.data_loader.dataset[0])
+        self.input_space=len(self.data_loader.dataset[0][0])
         if 'crime' in configs['mode']:
             self.output_space=2
         elif 'priority' in configs['mode']:
@@ -45,10 +48,11 @@ class RecordData:
         self.model.eval()        
         
         with torch.no_grad():
-            for batch_idx,data in enumerate(self.data_loader):
-                data=data.to(self.configs['device'])
+            for batch_idx,(crime_data,priority_data) in enumerate(self.data_loader):
+                crime_data=crime_data.to(self.configs['device'])
+                priority_data=priority_data.to(self.configs['device'])
 
-                crime_outputs,priority_outputs=self.model(data)
+                crime_outputs,priority_outputs=self.model(crime_data,priority_data)
                 crime_predictions=torch.max(crime_outputs,dim=1)[1].clone()
                 priority_predictions=torch.max(priority_outputs,dim=1)[1].clone()
 
