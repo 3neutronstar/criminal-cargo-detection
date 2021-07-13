@@ -5,28 +5,29 @@ class CrimeModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
         super(CrimeModel,self).__init__()
         self.model=nn.Sequential(
-            nn.Linear(input_space,500),
-            nn.BatchNorm1d(500),
-            nn.LeakyReLU(),
-
-            nn.Linear(500,500),
-            nn.BatchNorm1d(500),
-            nn.LeakyReLU(),
-
-            nn.Linear(500,output_space)            
+            nn.Linear(input_space,5000),
+            nn.BatchNorm1d(5000),
+            nn.ReLU(),
+            nn.Linear(5000,1000),
+            nn.BatchNorm1d(1000),
+            nn.ReLU(),
+            nn.Linear(1000,100),
+            nn.BatchNorm1d(100),
+            nn.ReLU(),
+            nn.Linear(100,output_space),         
         )
         """
             nn.Linear(input_space,5000),
             nn.BatchNorm1d(5000),
-            nn.LeakyReLU(),
+            nn.ReLU(),
 
             nn.Linear(5000,1000),
             nn.BatchNorm1d(1000),
-            nn.LeakyReLU(),
+            nn.ReLU(),
 
             nn.Linear(1000,100),
             nn.BatchNorm1d(100),
-            nn.LeakyReLU(),
+            nn.ReLU(),
 
             nn.Linear(100,output_space)
         """
@@ -64,13 +65,13 @@ class PriorityModel(nn.Module):
         self.model=nn.Sequential(
             nn.Linear(input_space,5000),
             nn.BatchNorm1d(5000),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(5000,1000),
             nn.BatchNorm1d(1000),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(1000,100),
             nn.BatchNorm1d(100),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(100,output_space),
         )
         self.criterion=nn.CrossEntropyLoss()
