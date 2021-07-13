@@ -52,6 +52,7 @@ class Preprocessing:
                 npy_dict[key]=npy_dict[key].to_numpy()
             np.save(os.path.join(self.data_path,'{}.npy'.format(key)),npy_dict[key])
         del npy_dict
+        train_dataframe,test_dataframe=self._load_dataset()
         self.mapping_dict = MappingJsonGenerator(train_dataframe,'Missing', ['신고번호', '신고일자', '관세율','검사결과코드'], self.configs['only_train'])() #'과세가격원화금액', '신고중량(KG)',
         print("Generate Json complete")
         # save
