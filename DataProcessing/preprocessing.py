@@ -100,7 +100,7 @@ class Preprocessing:
         dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
         dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
-        dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
+        dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 0)).map(str)
         numeric_features = ['신고중량(KG)', '과세가격원화금액', '관세율']
         dataframe.fillna('Missing', inplace=True)
         for column in numeric_features:
@@ -165,8 +165,8 @@ class Preprocessing:
         dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
         dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
-        dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
-        numeric_features = ['신고중량(KG)', '과세가격원화금액']
+        dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 0)).map(str)
+        numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율']
         dataframe.fillna('Missing', inplace=True)
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
