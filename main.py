@@ -74,6 +74,9 @@ def parse_args(args):
         parser.add_argument(
             '--split_ratio', '-sr',type=float, default=0.95,
             help='split ratio for training_set')
+        parser.add_argument(
+            '--only_train', type=bool, default=False,
+            help='count crimes only train, not valid (true) or train + valid (false)')
     elif parser.parse_known_args(args)[0].mode.lower()=='train_mixed':
         parser.add_argument(
             '--split_dataset','-sd',type=bool,default=False,
