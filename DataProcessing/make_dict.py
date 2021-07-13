@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import font_manager, rc
 
 class MappingJsonGenerator():
     def __init__(self, train_csv, fillna_str, drop_list, only_train):
@@ -70,13 +72,30 @@ class MappingJsonGenerator():
             print(train_np.shape)
 
         for i, col in enumerate(self.column_list):
+            crime_count_mean, crime_ratio_mean = 0., 0.
+            priority_count_mean, priority_ratio_mean = 0., 0.
             self.dictionary[col] = {}
             concat = np.concatenate([train_valid_np[:, i]], axis = 0)
             total_code, total_count = np.unique(concat, return_counts=True)
             crime_code, crime_count = np.unique(train_np[:, i][self.crime_idx], return_counts=True)
 
+            #--------------------------------------------
+            crime_dict = dict(zip(crime_code, crime_count))
+            crime_dict = np.array(sorted(crime_dict.items(), reverse=True, key = lambda x : x[1]))
+            #--------------------------------------------
+
             _, total_priority_count = np.unique(np.concatenate((train_np[:, i][self.priority_idx],train_np[:, i][self.non_priority_idx]),axis=0), return_counts=True)
             priority_code, priority_count = np.unique(train_np[:, i][self.priority_idx], return_counts=True)
+            
+            font_path = "C:\\Windows\\Fonts\\gulim.ttc"
+            font = font_manager.FontProperties(fname=font_path).get_name()
+            rc('font', family=font)
+
+            plt.plot(crime_dict[:, 0], crime_dict[:, 1].astype(np.int))
+            plt.title(col+'/'+str(crime_dict[:, 0].shape[0]), fontsize = 20)
+            ax = plt.gca()
+            ax.axes.xaxis.set_visible(False)
+            plt.show()
 
             crime_ratio = np.empty((total_count.shape[0], ))
             
@@ -94,6 +113,8 @@ class MappingJsonGenerator():
                 else :
                     crime_ratio[assign_idx] = np.round(crime_count[c_idx] / total_count[assign_idx], 4)
                     self.dictionary[col][c]['crime_count'] = int(crime_count[c_idx])
+                    crime_count_mean += float(crime_count[c_idx])
+                    crime_ratio_mean += float(crime_ratio[assign_idx]*crime_count[c_idx])
                     c_idx += 1
 
                 self.dictionary[col][c]['crime_ratio'] = float(crime_ratio[assign_idx])
@@ -116,6 +137,8 @@ class MappingJsonGenerator():
                     #priority_ratio[assign_idx] = np.round(priority_count[p_idx] / total_priority_count[assign_priority_idx], 4)
                     priority_ratio[assign_idx] = np.round(priority_count[p_idx] / self.dictionary[col][p]['crime_count'], 4)
                     self.dictionary[col][p]['priority_count'] = int(priority_count[p_idx])
+                    priority_count_mean += float(priority_count[p_idx])
+                    priority_ratio_mean += float(priority_ratio[assign_idx]*priority_count[p_idx])
                     p_idx += 1
 
                 
@@ -126,5 +149,10 @@ class MappingJsonGenerator():
 
             for i, c in enumerate(priority_concat[:, 1]):
                 self.dictionary[col][c]['sorted_priority_onehot'] = int(i+1)
+
+            self.dictionary[col]['crime_count_mean'] = crime_count_mean / train_valid_np.shape[0]
+            self.dictionary[col]['crime_ratio_mean'] =crime_ratio_mean / train_valid_np.shape[0]
+            self.dictionary[col]['priority_count_mean'] = priority_count_mean / train_valid_np.shape[0]
+            self.dictionary[col]['priority_ratio_mean'] = priority_ratio_mean / train_valid_np.shape[0]
 
         return self.dictionary
