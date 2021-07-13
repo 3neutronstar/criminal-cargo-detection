@@ -43,6 +43,15 @@ class Preprocessing:
         self.data_path=data_path
         # load mapping dictionary
         train_dataframe,test_dataframe=self._load_dataset()
+        npy_dict=dict()
+        npy_dict['crime_targets']=train_dataframe.pop('우범여부')
+        npy_dict['priority_targets']=train_dataframe.pop('핵심적발')
+        npy_dict['train_indices'], npy_dict['valid_indices']=self._split_indices(train_dataframe,npy_dict['priority_targets'])
+        for key in npy_dict.keys():
+            if isinstance(npy_dict,DataFrame):
+                npy_dict[key]=npy_dict[key].to_numpy()
+            np.save(os.path.join(self.data_path,'{}.npy'.format(key)),npy_dict[key])
+        del npy_dict
         self.mapping_dict = MappingJsonGenerator(train_dataframe,'Missing', ['신고번호', '신고일자', '관세율','검사결과코드'], self.configs['only_train'])() #'과세가격원화금액', '신고중량(KG)',
         print("Generate Json complete")
         # save
@@ -69,10 +78,6 @@ class Preprocessing:
             data_type_list=['train','test']
         #transform and save the dataset
         for csv_dataframe,data_type in zip(data_frame_list,data_type_list):
-            if data_type=='train':
-                npy_dict['crime_targets']=csv_dataframe.pop('우범여부')
-                npy_dict['priority_targets']=csv_dataframe.pop('핵심적발')
-                npy_dict['train_indices'], npy_dict['valid_indices']=self._split_indices(csv_dataframe,npy_dict['priority_targets'])
             npy_dict['{}_priority_data'.format(data_type)]=self._priority_transform(copy.deepcopy(csv_dataframe))
             npy_dict['{}_crime_data'.format(data_type)]=self._crime_transform(copy.deepcopy(csv_dataframe))
         for key in npy_dict.keys():
