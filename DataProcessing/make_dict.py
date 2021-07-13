@@ -14,27 +14,11 @@ class MappingJsonGenerator():
         self.train_csv['HS_middle'] = self.train_csv['HS10단위부호'] // 1000000
         self.train_csv['HS_low'] = self.train_csv['HS10단위부호'] // 10000
 
-        # self.test_csv['HS_upper'] = self.test_csv['HS10단위부호'] // 100000000
-        # self.test_csv['HS_middle'] = self.test_csv['HS10단위부호'] // 1000000
-        # self.test_csv['HS_low'] = self.test_csv['HS10단위부호'] // 10000
-
         self.train_csv['관세율구분코드_1자리']=self.train_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
-        # self.test_csv['관세율구분코드_1자리']=self.test_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
 
         self.train_csv['단위무게(KG)가격'] = (self.train_csv['과세가격원화금액']/self.train_csv['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
-        # self.test_csv['단위무게(KG)가격'] = (self.test_csv['과세가격원화금액']/self.test_csv['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
 
         self.train_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore',inplace=True)
-        # self.test_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore',inplace=True)
-
-        # self.train_csv = self.train_csv.drop(['HS10단위부호'], axis = 1)
-        # self.test_csv = self.test_csv.drop(['HS10단위부호'], axis = 1)
-
-        # self.train_hs_upper_code = np.array([s // 100000000 for s in self.train_hs_code]).reshape(-1, 1)
-        # self.test_hs_upper_code = np.array([s // 100000000 for s in self.test_hs_code]).reshape(-1, 1)
-
-        # self.train_hs_middle_code = np.array([s // 1000000 for s in self.train_hs_code]).reshape(-1, 1)
-        # self.test_hs_middle_code = np.array([s // 1000000 for s in self.test_hs_code]).reshape(-1, 1)
         
         if self.only_train:
             train_indices = np.load('./data/custom_contest/train_indices.npy')
@@ -87,15 +71,15 @@ class MappingJsonGenerator():
             _, total_priority_count = np.unique(np.concatenate((train_np[:, i][self.priority_idx],train_np[:, i][self.non_priority_idx]),axis=0), return_counts=True)
             priority_code, priority_count = np.unique(train_np[:, i][self.priority_idx], return_counts=True)
             
-            font_path = "C:\\Windows\\Fonts\\gulim.ttc"
-            font = font_manager.FontProperties(fname=font_path).get_name()
-            rc('font', family=font)
+            # font_path = "C:\\Windows\\Fonts\\gulim.ttc"
+            # font = font_manager.FontProperties(fname=font_path).get_name()
+            # rc('font', family=font)
 
-            plt.plot(crime_dict[:, 0], crime_dict[:, 1].astype(np.int))
-            plt.title(col+'/'+str(crime_dict[:, 0].shape[0]), fontsize = 20)
-            ax = plt.gca()
-            ax.axes.xaxis.set_visible(False)
-            plt.show()
+            # plt.plot(crime_dict[:, 0], crime_dict[:, 1].astype(np.int))
+            # plt.title(col+'/'+str(crime_dict[:, 0].shape[0]), fontsize = 20)
+            # ax = plt.gca()
+            # ax.axes.xaxis.set_visible(False)
+            # plt.show()
 
             crime_ratio = np.empty((total_count.shape[0], ))
             
