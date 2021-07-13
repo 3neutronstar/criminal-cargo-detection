@@ -1,11 +1,10 @@
 import numpy as np
 
 class MappingJsonGenerator():
-    def __init__(self, train_csv, test_csv, fillna_str, drop_list, only_train):
+    def __init__(self, train_csv, fillna_str, drop_list, only_train):
         
         self.only_train = only_train
         self.train_csv=train_csv
-        self.test_csv=test_csv
         self.fillna_str = fillna_str
         self.drop_list = drop_list
         
@@ -13,18 +12,18 @@ class MappingJsonGenerator():
         self.train_csv['HS_middle'] = self.train_csv['HS10단위부호'] // 1000000
         self.train_csv['HS_low'] = self.train_csv['HS10단위부호'] // 10000
 
-        self.test_csv['HS_upper'] = self.test_csv['HS10단위부호'] // 100000000
-        self.test_csv['HS_middle'] = self.test_csv['HS10단위부호'] // 1000000
-        self.test_csv['HS_low'] = self.test_csv['HS10단위부호'] // 10000
+        # self.test_csv['HS_upper'] = self.test_csv['HS10단위부호'] // 100000000
+        # self.test_csv['HS_middle'] = self.test_csv['HS10단위부호'] // 1000000
+        # self.test_csv['HS_low'] = self.test_csv['HS10단위부호'] // 10000
 
         self.train_csv['관세율구분코드_1자리']=self.train_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
-        self.test_csv['관세율구분코드_1자리']=self.test_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
+        # self.test_csv['관세율구분코드_1자리']=self.test_csv['관세율구분코드'].str.slice(start = 0, stop = 1)
 
         self.train_csv['단위무게(KG)가격'] = (self.train_csv['과세가격원화금액']/self.train_csv['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
-        self.test_csv['단위무게(KG)가격'] = (self.test_csv['과세가격원화금액']/self.test_csv['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
+        # self.test_csv['단위무게(KG)가격'] = (self.test_csv['과세가격원화금액']/self.test_csv['신고중량(KG)']).map(lambda x: np.round(x, 7)).map(str)
 
         self.train_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore',inplace=True)
-        self.test_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore',inplace=True)
+        # self.test_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore',inplace=True)
 
         # self.train_csv = self.train_csv.drop(['HS10단위부호'], axis = 1)
         # self.test_csv = self.test_csv.drop(['HS10단위부호'], axis = 1)
@@ -46,10 +45,8 @@ class MappingJsonGenerator():
         self.crime = np.array(self.train_csv['우범여부'])
         self.priority = np.array(self.train_csv['핵심적발'])
         self.train_csv=self.train_csv.drop(['우범여부', '핵심적발'] + self.drop_list, axis = 1,errors='ignore')
-        self.test_csv=self.test_csv.drop(self.drop_list, axis = 1,errors='ignore')
 
         self.train_csv = self.train_csv.fillna(self.fillna_str)
-        self.test_csv = self.test_csv.fillna(self.fillna_str)
         self.column_list = np.array(self.train_csv.columns, dtype=str)
 
         self.crime_idx = np.where(self.crime == 1)[0]
@@ -61,20 +58,20 @@ class MappingJsonGenerator():
         return self.forward()
     
     def forward(self):
-        train_np, test_np = np.array(self.train_csv, dtype = str), np.array(self.test_csv, dtype = str)
+        train_np = np.array(self.train_csv, dtype = str)
         print(train_np.shape)
         if self.only_train:
             train_valid_np = np.array(self.train_valid_csv, dtype = str)
             print('calc count_ratio for only train')
-            print(train_valid_np.shape, test_np.shape)
+            print(train_valid_np.shape)
         else:
             train_valid_np = train_np
             print('calc count_ratio for train + valid')
-            print(train_np.shape, test_np.shape)
+            print(train_np.shape)
 
         for i, col in enumerate(self.column_list):
             self.dictionary[col] = {}
-            concat = np.concatenate([train_valid_np[:, i], test_np[:, i]], axis = 0)
+            concat = np.concatenate([train_valid_np[:, i]], axis = 0)
             total_code, total_count = np.unique(concat, return_counts=True)
             crime_code, crime_count = np.unique(train_np[:, i][self.crime_idx], return_counts=True)
 
@@ -100,13 +97,13 @@ class MappingJsonGenerator():
                     c_idx += 1
 
                 self.dictionary[col][c]['crime_ratio'] = float(crime_ratio[assign_idx])
-                self.dictionary[col][c]['onehot'] = int(assign_idx)
+                self.dictionary[col][c]['onehot'] = int(assign_idx+1)
             
             crime_concat = np.concatenate([crime_ratio.reshape(-1, 1), total_code.reshape(-1, 1)], axis = 1)
             crime_concat = np.array(sorted(crime_concat, key = lambda x : x[0], reverse=True))
 
             for i, c in enumerate(crime_concat[:, 1]):
-                self.dictionary[col][c]['sorted_crime_onehot'] = int(i)
+                self.dictionary[col][c]['sorted_crime_onehot'] = int(i+1)
 
 
                 
@@ -128,6 +125,6 @@ class MappingJsonGenerator():
             priority_concat = np.array(sorted(priority_concat, key = lambda x : x[0], reverse=True))
 
             for i, c in enumerate(priority_concat[:, 1]):
-                self.dictionary[col][c]['sorted_priority_onehot'] = int(i)
+                self.dictionary[col][c]['sorted_priority_onehot'] = int(i+1)
 
         return self.dictionary
