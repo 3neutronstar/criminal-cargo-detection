@@ -15,12 +15,14 @@ class TorchLearner(BaseLearner):
     def __init__(self, logger,time_data, data_path, save_path, device, configs):
         super(TorchLearner,self).__init__(logger,time_data, data_path, save_path, device, configs)
         self.train_dataloader,self.test_dataloader=load_dataloader(self.data_path,configs) # dataloader output(tensor) -> .numpy()
-        self.input_space=self.train_dataloader.dataset[0][0].size()[0]
         if 'crime' in configs['mode']:
+            self.input_space=self.train_dataloader.dataset[0][0].size()[0]
             self.output_space=2
         elif 'priority' in configs['mode']:
+            self.input_space=self.train_dataloader.dataset[0][0].size()[0]
             self.output_space=2
         else: #mixed
+            self.input_space=[self.train_dataloader.dataset[0][0].size()[0], self.train_dataloader.dataset[0][1].size()[0]]
             self.output_space=2
         self.model=MODEL[configs['mode'].split('_')[1]](self.input_space,self.output_space,configs)
         self.criterion=self.model.criterion

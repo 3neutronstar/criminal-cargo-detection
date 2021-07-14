@@ -107,13 +107,14 @@ class Preprocessing:
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
         dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
         dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 0)).map(str)
+        # dataframe.drop('HS10단위부호',axis=1,inplace=True)
         numeric_features = ['신고중량(KG)', '과세가격원화금액', '관세율']
         dataframe.fillna('Missing', inplace=True)
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
 
-        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
+        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
         
         add_count_ratio_list=['crime_count','total_count']
@@ -141,9 +142,12 @@ class Preprocessing:
                         np_count_ratio[row][idx] = dict_col[val_data][add_instance]
                         x = binary_transform(dict_col[val_data]['onehot']) 
                 len_x = len(x) 
-                for idx in range(len_x): 
-                  if x[idx]=='1':
-                    np_encoding[row][idx] = x[idx]
+                if x=='0':
+                    for idx in range(len_x):
+                        np_encoding[row][idx] = 0.5
+                else:
+                    for idx in range(len_x):
+                        np_encoding[row][idx] = float(x[idx])
 
             # regularization
             for idx,reg_instance in enumerate(reg_count_ratio_list):
@@ -170,6 +174,7 @@ class Preprocessing:
         dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
         dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
+        # dataframe.drop('HS10단위부호',axis=1,inplace=True)
         dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
         dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 0)).map(str)
         numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율']
@@ -178,10 +183,10 @@ class Preprocessing:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
 
-        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
+        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
-        add_count_ratio_list=['crime_count','priority_count']
-        reg_count_ratio_list=['crime_count','priority_count']
+        add_count_ratio_list=['priority_count','total_count']
+        reg_count_ratio_list=['priority_count','total_count']
 
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
@@ -199,15 +204,18 @@ class Preprocessing:
                     if val_data not in dict_col.keys():
                         if add_instance in ['crime_ratio','priority_ratio'] : np_count_ratio[row][idx] = 0.5
                         else : np_count_ratio[row][idx] = 0
-                        x = binary_transform(0) 
+                        x = binary_transform(0)
                     else :
                         np_count_ratio[row][idx] = dict_col[val_data][add_instance]
                         x = binary_transform(dict_col[val_data]['onehot']) 
 
                 len_x = len(x) 
-                for idx in range(len_x): 
-                  if x[idx]=='1':
-                    np_encoding[row][idx] = x[idx]
+                if x=='0':
+                    for idx in range(len_x):
+                        np_encoding[row][idx] = 0.5
+                else:
+                    for idx in range(len_x):
+                        np_encoding[row][idx] = float(x[idx])
 
             # regularization
             for idx,reg_instance in enumerate(reg_count_ratio_list):
@@ -217,7 +225,7 @@ class Preprocessing:
             np_data = np.concatenate((np_data,np_count_ratio, np_encoding), axis=1)
 
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
-        
+                
         print("After priority transform shape",np_data.shape)
         return np_data
         
