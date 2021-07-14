@@ -20,7 +20,6 @@ class MixedLearner(TorchLearner):
         for batch_idx, (crime_data, priority_data, crime_targets, priority_targets) in enumerate(self.train_dataloader):
             crime_data, priority_data = crime_data.to(self.configs['device']), priority_data.to(self.configs['device'])
             crime_targets, priority_targets = crime_targets.to(self.configs['device']), priority_targets.to(self.configs['device'])
-
             crime_outputs,priority_outputs=self.model(crime_data, priority_data)
             crime_loss,priority_loss=self.criterion(crime_outputs,priority_outputs,crime_targets,priority_targets)
             loss=crime_loss+priority_loss
