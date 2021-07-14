@@ -76,7 +76,7 @@ class MixedModel(nn.Module):
         softened_crime_output=f.softmax(crime_output,dim=1).detach().clone()
         priority_input=torch.cat((softened_crime_output,priority_x),dim=1)
         # priority_input=x
-        priority_output=self.priority_model(priority_x)
+        priority_output=self.priority_model(priority_input)
         return crime_output,priority_output
 
     def save_model(self,epoch,score_dict):
