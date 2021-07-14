@@ -119,16 +119,13 @@ class Preprocessing:
         
         add_count_ratio_list=['crime_count','total_count']
         reg_count_ratio_list=['crime_count','total_count']
-
+        np_encoding=None
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
                 continue
             dataframe[column] = dataframe[column].map(str)
             dict_col = self.mapping_dict[column]
             np_count_ratio = np.zeros((len_df,len(add_count_ratio_list)))
-            max_ohe = len(dict_col.keys())+2
-            encoding_digits = find_digits(max_ohe) 
-            np_encoding = np.zeros((len_df,encoding_digits))
             for row in dataframe[column].index: 
                 val_data = dataframe[column][row]
 
@@ -137,7 +134,6 @@ class Preprocessing:
                     if val_data not in dict_col.keys():
                         if add_instance in ['crime_ratio','priority_ratio'] : np_count_ratio[row][idx] = 0.0
                         else : np_count_ratio[row][idx] = 0
-                        x = binary_transform(0) 
                     else :
                         if (not dict_col[val_data]['is_crime_mask']) and (dict_col[val_data]['crime_ratio'] >= 0.3) :
                             if add_instance != 'total_count':
@@ -146,11 +142,9 @@ class Preprocessing:
                             else :
                                 np_count_ratio[row][idx] = dict_col[val_data][add_instance]
                                 np_count_ratio[row][idx] = dict_col[val_data][add_instance]
-                            x = binary_transform(dict_col[val_data]['onehot']) 
                         elif (not dict_col[val_data]['is_crime_mask']) and (dict_col[val_data]['crime_ratio'] < 0.3) :
                             np_count_ratio[row][idx] = dict_col[val_data][add_instance]
                             np_count_ratio[row][idx] = dict_col[val_data][add_instance]
-                            x = binary_transform(dict_col[val_data]['onehot']) 
                         elif (dict_col[val_data]['is_crime_mask']) :
                             if add_instance != 'total_count':
                                 np_count_ratio[row][idx] = dict_col[val_data][add_instance]*0.5
@@ -158,26 +152,45 @@ class Preprocessing:
                             else :
                                 np_count_ratio[row][idx] = dict_col[val_data][add_instance]
                                 np_count_ratio[row][idx] = dict_col[val_data][add_instance]
-                            x = binary_transform(0) 
                         else :
                             np_count_ratio[row][idx] = dict_col[val_data][add_instance]
                             np_count_ratio[row][idx] = dict_col[val_data][add_instance]
-                            x = binary_transform(dict_col[val_data]['onehot']) 
-                        x = binary_transform(dict_col[val_data]['onehot']) 
-                len_x = len(x) 
-                if x=='0':
-                    for idx in range(len_x):
-                        np_encoding[row][idx] = 0.5
-                else:
-                    for idx in range(len_x):
-                        np_encoding[row][idx] = float(x[idx])
+            # # OneHot
+            # max_ohe = len(dict_col.keys())+2
+            # encoding_digits = find_digits(max_ohe) 
+            # np_encoding = np.zeros((len_df,encoding_digits))
+            # for row in dataframe[column].index: 
+            #     val_data = dataframe[column][row]
+            #     for idx, add_instance in enumerate(add_count_ratio_list):
+            #         if val_data not in dict_col.keys():
+            #             x = binary_transform(0) 
+            #         else :
+            #             if (not dict_col[val_data]['is_crime_mask']) and (dict_col[val_data]['crime_ratio'] >= 0.3) :
+            #                 x = binary_transform(dict_col[val_data]['onehot']) 
+            #             elif (not dict_col[val_data]['is_crime_mask']) and (dict_col[val_data]['crime_ratio'] < 0.3) :
+            #                 x = binary_transform(dict_col[val_data]['onehot']) 
+            #             elif (dict_col[val_data]['is_crime_mask']):
+            #                 x = binary_transform(0) 
+            #             else :
+            #                 x = binary_transform(dict_col[val_data]['onehot']) 
+
+            #     len_x = len(x) 
+            #     if x=='0':
+            #         for idx in range(len_x):
+            #             np_encoding[row][idx] = 0.5
+            #     else:
+            #         for idx in range(len_x):
+            #             np_encoding[row][idx] = float(x[idx])
 
             # regularization
             for idx,reg_instance in enumerate(reg_count_ratio_list):
                 np_count_ratio[:,idx] = (np_count_ratio[:,idx]-np_count_ratio[:,idx].mean())/(np_count_ratio[:,idx].var())
-
-            np_encoding = np_encoding[:,::-1]
-            np_data = np.concatenate((np_data,np_count_ratio, ), axis=1)
+            
+            if np_encoding is None: # 이진화 안하는 경우 ->위 주석처리 
+                np_data = np.concatenate((np_data,np_count_ratio, ), axis=1)
+            else: #이진화 하는 경우 -> 위 주석처리 x
+                np_encoding = np_encoding[:,::-1]
+                np_data = np.concatenate((np_data,np_count_ratio,np_encoding ), axis=1)
 
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
                 
@@ -205,11 +218,11 @@ class Preprocessing:
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-
+        np_encoding=None
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발', '수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
-        add_count_ratio_list=['priority_count','total_count']
-        reg_count_ratio_list=['priority_count','total_count']
+        add_count_ratio_list=['priority_count','crime_count']
+        reg_count_ratio_list=['priority_count','crime_count']
 
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
@@ -217,35 +230,71 @@ class Preprocessing:
             dataframe[column] = dataframe[column].map(str)
             dict_col = self.mapping_dict[column]
             np_count_ratio = np.zeros((len_df,len(add_count_ratio_list)))
-            max_ohe = len(dict_col.keys())+2
-            encoding_digits = find_digits(max_ohe) 
-            np_encoding = np.zeros((len_df,encoding_digits))
             for row in dataframe[column].index: 
                 val_data = dataframe[column][row]
+
                 # value you want to add
                 for idx, add_instance in enumerate(add_count_ratio_list):
                     if val_data not in dict_col.keys():
-                        if add_instance in ['crime_ratio','priority_ratio'] : np_count_ratio[row][idx] = 0.5
+                        if add_instance in ['crime_ratio','priority_ratio'] : np_count_ratio[row][idx] = 0.0
                         else : np_count_ratio[row][idx] = 0
-                        x = binary_transform(0)
                     else :
-                        np_count_ratio[row][idx] = dict_col[val_data][add_instance]
-                        x = binary_transform(dict_col[val_data]['onehot']) 
+                        if (not dict_col[val_data]['is_priority_mask']) and (dict_col[val_data]['priority_ratio'] >= 0.3) :
+                            if add_instance != 'crime_count':
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]*1.5
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]*1.5
+                            else :
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                        elif (not dict_col[val_data]['is_priority_mask']) and (dict_col[val_data]['priority_ratio'] < 0.3) :
+                            np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                            np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                        elif (dict_col[val_data]['is_priority_mask']) :
+                            if add_instance != 'crime_count':
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]*0.5
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]*0.5
+                            else :
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                        else :
+                            np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                            np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+            # # OneHot
+            # max_ohe = len(dict_col.keys())+2
+            # encoding_digits = find_digits(max_ohe) 
+            # np_encoding = np.zeros((len_df,encoding_digits))
+            # for row in dataframe[column].index: 
+            #     val_data = dataframe[column][row]
+            #     for idx, add_instance in enumerate(add_count_ratio_list):
+            #         if val_data not in dict_col.keys():
+            #             x = binary_transform(0) 
+            #         else :
+            #             if (not dict_col[val_data]['is_priority_mask']) and (dict_col[val_data]['priority_ratio'] >= 0.3) :
+            #                 x = binary_transform(dict_col[val_data]['onehot']) 
+            #             elif (not dict_col[val_data]['is_priority_mask']) and (dict_col[val_data]['priority_ratio'] < 0.3) :
+            #                 x = binary_transform(dict_col[val_data]['onehot']) 
+            #             elif (dict_col[val_data]['is_priority_mask']):
+            #                 x = binary_transform(0) 
+            #             else :
+            #                 x = binary_transform(dict_col[val_data]['onehot']) 
 
-                len_x = len(x) 
-                if x=='0':
-                    for idx in range(len_x):
-                        np_encoding[row][idx] = 0.5
-                else:
-                    for idx in range(len_x):
-                        np_encoding[row][idx] = float(x[idx])
+            #     len_x = len(x) 
+            #     if x=='0':
+            #         for idx in range(len_x):
+            #             np_encoding[row][idx] = 0.5
+            #     else:
+            #         for idx in range(len_x):
+            #             np_encoding[row][idx] = float(x[idx])
 
             # regularization
             for idx,reg_instance in enumerate(reg_count_ratio_list):
                 np_count_ratio[:,idx] = (np_count_ratio[:,idx]-np_count_ratio[:,idx].mean())/(np_count_ratio[:,idx].var())
-
-            np_encoding = np_encoding[:,::-1]
-            np_data = np.concatenate((np_data,np_count_ratio, ), axis=1)
+            
+            if np_encoding is None: # 이진화 안하는 경우 ->위 주석처리 
+                np_data = np.concatenate((np_data,np_count_ratio, ), axis=1)
+            else: #이진화 하는 경우 -> 위 주석처리 x
+                np_encoding = np_encoding[:,::-1]
+                np_data = np.concatenate((np_data,np_count_ratio,np_encoding ), axis=1)
 
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
                 
