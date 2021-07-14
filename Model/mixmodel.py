@@ -65,7 +65,7 @@ class MixedModel(nn.Module):
     def __init__(self,input_space,output_space,configs):
         super(MixedModel,self).__init__()
         self.crime_model=CrimeModel(input_space[0],output_space,configs)
-        self.priority_model=PriorityModel(input_space[1]+output_space,output_space,configs)#
+        self.priority_model=PriorityModel(input_space[1],output_space,configs)#
         # self.priority_model=PriorityModel(input_space[1],output_space,configs)#+output_space
         self.criterion=MixedLossFunction(self.crime_model.criterion,self.priority_model.criterion,configs)
         self.optimizer=MixedOptimizer(self.crime_model.optimizer,self.priority_model.optimizer)
@@ -74,9 +74,9 @@ class MixedModel(nn.Module):
     def forward(self,crime_x,priority_x):
         crime_output=self.crime_model(crime_x)
         softened_crime_output=f.softmax(crime_output,dim=1).detach().clone()
-        priority_input=torch.cat((softened_crime_output,priority_x),dim=1)
-        # priority_input=x
-        priority_output=self.priority_model(priority_input)
+        # priority_input=torch.cat((softened_crime_output,priority_x),dim=1)
+        # priority_output=self.priority_model(priority_input)
+        priority_output=self.priority_model(priority_x)
         return crime_output,priority_output
 
     def save_model(self,epoch,score_dict):
