@@ -41,10 +41,10 @@ class MappingJsonGenerator():
         self.dictionary = dict()
 
         upper_limit = 0
-        #self.crime_threshold_no_valid = [150, 7, 3, 3, 40, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, 20, 10, upper_limit, upper_limit, upper_limit, 30, 30, 20, upper_limit, 3]
-        #self.priority_threshold_no_valid = [150, 16, 3, 3, 60, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, 30, 15, upper_limit, upper_limit, upper_limit, 30, 25, 15, upper_limit, 3]
-        self.crime_threshold_no_valid = [0]*21
-        self.priority_threshold_no_valid = [0]*21
+        self.crime_threshold_no_valid = [150, 7, 3, 3, 40, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, 20, 10, upper_limit, upper_limit, upper_limit, 30, 30, 20, upper_limit, 3]
+        self.priority_threshold_no_valid = [150, 16, 3, 3, 60, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, 30, 15, upper_limit, upper_limit, upper_limit, 30, 25, 15, upper_limit, 3]
+        #self.crime_threshold_no_valid = [0]*21
+        #self.priority_threshold_no_valid = [0]*21
         
     def __call__(self):
         return self.forward()
@@ -101,16 +101,16 @@ class MappingJsonGenerator():
                 if c not in crime_code : 
                     crime_ratio[assign_idx] = 0.
                     self.dictionary[col][c]['crime_count'] = int(0)
-                    self.dictionary[col][c]['is_mask'] = True
+                    self.dictionary[col][c]['is_crime_mask'] = True
                 else :
                     crime_ratio[assign_idx] = np.round(crime_count[c_idx] / total_count[assign_idx], 4)
                     self.dictionary[col][c]['crime_count'] = int(crime_count[c_idx])
                     crime_count_mean += float(crime_count[c_idx])
                     crime_ratio_mean += float(crime_ratio[assign_idx]*crime_count[c_idx])
                     if crime_count[c_idx] <= self.crime_threshold_no_valid[i]:
-                        self.dictionary[col][c]['is_mask'] = True
+                        self.dictionary[col][c]['is_crime_mask'] = True
                     else : 
-                        self.dictionary[col][c]['is_mask'] = False
+                        self.dictionary[col][c]['is_crime_mask'] = False
                     c_idx += 1
 
                 self.dictionary[col][c]['crime_ratio'] = float(crime_ratio[assign_idx])
@@ -128,7 +128,7 @@ class MappingJsonGenerator():
                 if p not in priority_code: 
                     priority_ratio[assign_idx] = 0.
                     self.dictionary[col][p]['priority_count'] = int(0)
-                    self.dictionary[col][p]['is_mask'] = True
+                    self.dictionary[col][p]['is_priority_mask'] = True
                 else :
                     assign_priority_idx=np.where(priority_code==p)[0]
                     #priority_ratio[assign_idx] = np.round(priority_count[p_idx] / total_priority_count[assign_priority_idx], 4)
@@ -137,9 +137,9 @@ class MappingJsonGenerator():
                     priority_count_mean += float(priority_count[p_idx])
                     priority_ratio_mean += float(priority_ratio[assign_idx]*priority_count[p_idx])
                     if priority_count[p_idx] <= self.priority_threshold_no_valid[i]:
-                        self.dictionary[col][p]['is_mask'] = True
+                        self.dictionary[col][p]['is_priority_mask'] = True
                     else : 
-                        self.dictionary[col][p]['is_mask'] = False
+                        self.dictionary[col][p]['is_priority_mask'] = False
                     p_idx += 1
 
                 

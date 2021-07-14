@@ -114,7 +114,7 @@ class Preprocessing:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
 
-        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
+        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발' ,'수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
         
         add_count_ratio_list=['crime_count','total_count','priority_count']
@@ -135,11 +135,34 @@ class Preprocessing:
                 # value you want to add
                 for idx, add_instance in enumerate(add_count_ratio_list):
                     if val_data not in dict_col.keys():
-                        if add_instance in ['crime_ratio','priority_ratio'] : np_count_ratio[row][idx] = 0.5
+                        if add_instance in ['crime_ratio','priority_ratio'] : np_count_ratio[row][idx] = 0.0
                         else : np_count_ratio[row][idx] = 0
                         x = binary_transform(0) 
                     else :
-                        np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                        if (not dict_col[val_data]['is_crime_mask']) and (dict_col[val_data]['crime_ratio'] >= 0.3) :
+                            if add_instance != 'total_count':
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]*1.5
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]*1.5
+                            else :
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                            x = binary_transform(dict_col[val_data]['onehot']) 
+                        elif (not dict_col[val_data]['is_crime_mask']) and (dict_col[val_data]['crime_ratio'] < 0.3) :
+                            np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                            np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                            x = binary_transform(dict_col[val_data]['onehot']) 
+                        elif (dict_col[val_data]['is_crime_mask']) :
+                            if add_instance != 'total_count':
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]*0.5
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]*0.5
+                            else :
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                                np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                            x = binary_transform(0) 
+                        else :
+                            np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                            np_count_ratio[row][idx] = dict_col[val_data][add_instance]
+                            x = binary_transform(dict_col[val_data]['onehot']) 
                         x = binary_transform(dict_col[val_data]['onehot']) 
                 len_x = len(x) 
                 if x=='0':
@@ -154,7 +177,7 @@ class Preprocessing:
                 np_count_ratio[:,idx] = (np_count_ratio[:,idx]-np_count_ratio[:,idx].mean())/(np_count_ratio[:,idx].var())
 
             np_encoding = np_encoding[:,::-1]
-            np_data = np.concatenate((np_data,np_count_ratio, np_encoding), axis=1)
+            np_data = np.concatenate((np_data,np_count_ratio, ), axis=1)
 
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
                 
@@ -183,7 +206,7 @@ class Preprocessing:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
 
-        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발','수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
+        dataframe.drop(['신고일자','신고번호','우범여부','핵심적발', '수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
         add_count_ratio_list=['crime_count','priority_count','total_count']
         reg_count_ratio_list=['crime_count','priority_count','total_count']
@@ -222,7 +245,7 @@ class Preprocessing:
                 np_count_ratio[:,idx] = (np_count_ratio[:,idx]-np_count_ratio[:,idx].mean())/(np_count_ratio[:,idx].var())
 
             np_encoding = np_encoding[:,::-1]
-            np_data = np.concatenate((np_data,np_count_ratio, np_encoding), axis=1)
+            np_data = np.concatenate((np_data,np_count_ratio, ), axis=1)
 
             print('\r[{}/{}] Finished Process'.format(i+1,len(categorical_features)),end='')
                 
