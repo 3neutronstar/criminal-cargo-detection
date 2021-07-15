@@ -51,6 +51,8 @@ class MixedLearner(TorchLearner):
         score_dict['loss']=train_loss/(batch_idx+1)
         score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
         score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
+        score_dict['crime']['total_f1'] = (0.5)*score_dict['crime']['f1score'] + (0.5)*score_dict['priority']['f1score']
+        score_dict['priority']['total_f1'] = (0.5)*score_dict['crime']['f1score'] + (0.5)*score_dict['priority']['f1score']
         return score_dict
 
 
@@ -84,6 +86,8 @@ class MixedLearner(TorchLearner):
         score_dict['loss']=eval_loss/(batch_idx+1)
         score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
         score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
+        score_dict['crime']['total_f1'] = (0.5)*score_dict['crime']['f1score'] + (0.5)*score_dict['priority']['f1score']
+        score_dict['priority']['total_f1'] = (0.5)*score_dict['crime']['f1score'] + (0.5)*score_dict['priority']['f1score']
 
         return score_dict
 
@@ -106,6 +110,7 @@ class MixedLearner(TorchLearner):
         for model_type in ['crime','priority']:
             this_score_dict=score_dict[model_type]
             self._write_logger(epoch,model_type,this_score_dict,mode)
+
         if mode=='eval':
             for model_type in ['crime','priority']:
                 if self.best_f1score[model_type]<score_dict[model_type]['f1score']:
