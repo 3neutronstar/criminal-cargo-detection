@@ -100,37 +100,46 @@ class Preprocessing:
                                 '징수형태코드', '운송수단유형코드', '반입보세구역부호', 'HS_upper', 'HS_middle', 
                                 '적출국가코드', '원산지국가코드', '관세율구분코드']
         """
-        print("Before crime transform shape",dataframe.shape)
         categorical_features = self.mapping_dict.keys()
         dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
         dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
         dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
         dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 0)).map(str)
-        # dataframe.drop('HS10단위부호',axis=1,inplace=True)
+        dataframe.drop('HS10단위부호',axis=1,inplace=True)
         # dataframe['세금'] = (dataframe['과세가격원화금액']*dataframe['관세율']/100.0)
+        dataframe['세금'] = (dataframe['과세가격원화금액']*dataframe['관세율']/dataframe['신고중량(KG)']/100.0)
         # numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율','세금']
         numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율']
         dataframe.fillna('Missing', inplace=True)
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
         np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
-
+        # numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율']
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발' ,'수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
         
         add_count_ratio_list=['crime_count','total_count']
         reg_count_ratio_list=['crime_count','total_count']
         np_encoding=None
+        print("Before crime transform shape",dataframe.shape)
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
                 continue
             dataframe[column] = dataframe[column].map(str)
             dict_col = self.mapping_dict[column]
             np_count_ratio = np.zeros((len_df,len(add_count_ratio_list)))
+            if column in ['HS_upper','특송업체부호']:
+                np_ratio_addition = np.zeros((len_df,1))
+                for row in dataframe[column].index: 
+                    val_data = dataframe[column][row]
+                    if val_data not in dict_col.keys():
+                        continue
+                    else:
+                        np_ratio_addition[row]=dict_col[val_data]['crime_ratio']
+                np_count_ratio=np.concatenate((np_count_ratio,np_ratio_addition),axis=1)
             for row in dataframe[column].index: 
                 val_data = dataframe[column][row]
-
                 # value you want to add
                 for idx, add_instance in enumerate(add_count_ratio_list):
                     if val_data not in dict_col.keys():
@@ -207,33 +216,42 @@ class Preprocessing:
                                 '징수형태코드', '운송수단유형코드', '반입보세구역부호', 'HS_upper', 'HS_middle', 
                                 '적출국가코드', '원산지국가코드', '관세율구분코드']
         """
-        print("Before priority transform shape",dataframe.shape)
+        dataframe.fillna('Missing', inplace=True)
         categorical_features = self.mapping_dict.keys()
         dataframe['HS_upper'] = dataframe['HS10단위부호'] // 100000000 # 위 2자리
         dataframe['HS_middle'] = dataframe['HS10단위부호'] // 1000000 # 위 4자리
         dataframe['HS_low'] = dataframe['HS10단위부호'] // 10000 # 위 4자리
-        # dataframe.drop('HS10단위부호',axis=1,inplace=True)
+        dataframe.drop('HS10단위부호',axis=1,inplace=True)
         dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
         dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 0)).map(str)
-        # dataframe['세금'] = (dataframe['과세가격원화금액']*dataframe['관세율']/100.0)
-        # numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율','세금']
-        numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율']
-        dataframe.fillna('Missing', inplace=True)
+        dataframe['세금'] = (dataframe['과세가격원화금액']*dataframe['관세율']/dataframe['신고중량(KG)']/100.0)
+        numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율','세금']
+        # numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율']
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
-        np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
+        np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율','세금']].to_numpy()
         np_encoding=None
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발', '수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
         add_count_ratio_list=['priority_count','crime_count']
         reg_count_ratio_list=['priority_count','crime_count']
 
+        print("Before priority transform shape",dataframe.shape)
         for i,column in enumerate(categorical_features):
             if column not in dataframe.columns:
                 continue
             dataframe[column] = dataframe[column].map(str)
             dict_col = self.mapping_dict[column]
             np_count_ratio = np.zeros((len_df,len(add_count_ratio_list)))
+            if column in ['HS_upper','특송업체부호']:
+                np_ratio_addition = np.zeros((len_df,1))
+                for row in dataframe[column].index: 
+                    val_data = dataframe[column][row]
+                    if val_data not in dict_col.keys():
+                        continue
+                    else:
+                        np_ratio_addition[row]=dict_col[val_data]['priority_ratio']
+                np_count_ratio=np.concatenate((np_count_ratio,np_ratio_addition),axis=1)
             for row in dataframe[column].index: 
                 val_data = dataframe[column][row]
 

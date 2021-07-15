@@ -56,7 +56,7 @@ def parse_args(args):
         '--lr_decay', type=int, default=5,
         help='run epochs')
     parser.add_argument(
-        '--lr_decay_rate', type=float, default=0.9,
+        '--lr_decay_rate', type=float, default=0.8,
         help='run epochs')
     parser.add_argument(
         '--custom_loss', type=str, default='baseline',

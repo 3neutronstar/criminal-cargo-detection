@@ -115,19 +115,26 @@ def load_dataloader(data_path,configs):
 
     if 'xgboost' not in configs['mode']:
         print('-------------load_dataloader--------------')
+        sampler=None
         #class_counts = [66344, 18794]  # [36377, 3755]
         #class_counts = [np.where(train_target == 0)[0].shape[0], np.where(train_target == 1)[0].shape[0], np.where(train_target == 2)[0].shape[0]]
-        class_counts = [np.where(train_target == 0)[0].shape[0], np.where(train_target == 1)[0].shape[0]]
-        num_samples = sum(class_counts)  # 40132
-        train_labels = train_target.tolist()
-        #print(np.where(train_target == 0)[0].shape, np.where(train_target == 1)[0].shape, np.where(train_target == 2)[0].shape)
+        # class_counts = [np.where(train_target == 0)[0].shape[0], np.where(train_target == 1)[0].shape[0]]
+        # num_samples = sum(class_counts)  # 40132
+        # train_labels = train_target.tolist()
+        # #print(np.where(train_target == 0)[0].shape, np.where(train_target == 1)[0].shape, np.where(train_target == 2)[0].shape)
 
-        class_weights = [num_samples/class_counts[i] for i in range(len(class_counts))]
-        weights = [class_weights[train_labels[i]] for i in range(int(num_samples))]
-        sampler = torch.utils.data.sampler.WeightedRandomSampler(torch.DoubleTensor(weights), int(num_samples))
+        # class_weights = [num_samples/class_counts[i] for i in range(len(class_counts))]
+        # weights = [class_weights[train_labels[i]] for i in range(int(num_samples))]
+        # sampler = torch.utils.data.sampler.WeightedRandomSampler(torch.DoubleTensor(weights), int(num_samples))
 
+        #주석만 삭제해도 돌아가게
+        if sampler is None:
+            shuffle=True
+        else:
+            shuffle=False
+        
         train_dataset,valid_dataset=load_dataset(data_path,configs)
-        train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],num_workers=configs['num_workers'], sampler = sampler)
+        train_dataloader=DataLoader(train_dataset,batch_size=configs['batch_size'],num_workers=configs['num_workers'], sampler = sampler,shuffle=shuffle)
         valid_dataloader=DataLoader(valid_dataset,batch_size=configs['batch_size'],num_workers=configs['num_workers'], shuffle = False)
         return train_dataloader,valid_dataloader
     else: #xgboost

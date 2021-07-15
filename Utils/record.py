@@ -20,12 +20,14 @@ class RecordData:
         self.data_loader=DataLoader(test_dataset)
         self.configs=load_params(configs,current_path,configs['file_name'])
         self.configs['file_name']=configs['file_name']
-        self.input_space=len(self.data_loader.dataset[0][0])
         if 'crime' in configs['mode']:
+            self.input_space=self.train_dataloader.dataset[0][0].size()[0]
             self.output_space=2
         elif 'priority' in configs['mode']:
+            self.input_space=self.train_dataloader.dataset[0][0].size()[0]
             self.output_space=2
         else: #mixed
+            self.input_space=[self.train_dataloader.dataset[0][0].size()[0], self.train_dataloader.dataset[0][1].size()[0]]
             self.output_space=2
         self.model=MODEL[self.configs['mode'].split('_')[1]](self.input_space,self.output_space,configs)
         self.metric={}
