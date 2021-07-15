@@ -12,6 +12,8 @@ class MixedLearner(TorchLearner):
         }
         self.best_f1score={'crime':0.0,'priority':0.0}
         self.best_acc={'crime':0.0,'priority':0.0}
+        self.best_epoch=0
+        self.best_advantage=0.0
     
     def _train(self,epoch,score_dict):
         self.model.train()
@@ -107,8 +109,10 @@ class MixedLearner(TorchLearner):
             this_score_dict=score_dict[model_type]
             self._write_logger(epoch,model_type,this_score_dict,mode)
         if mode=='eval':
-            for model_type in ['crime','priority']:
-                if self.best_f1score[model_type]<score_dict[model_type]['f1score']:
+            if self.best_advantage<(score_dict['crime']['f1score']+score_dict['priority']['f1score'])/2.0:
+                self.best_advantage=(score_dict['crime']['f1score']+score_dict['priority']['f1score'])/2.0
+                self.best_epoch=epoch
+                for model_type in ['crime','priority']:
                     self.best_f1score[model_type]=score_dict[model_type]['f1score']
                     self.best_acc[model_type]=score_dict[model_type]['accuracy']
                     self.save_models(epoch,score_dict,model_type)
