@@ -9,6 +9,7 @@ class MixedLearner(TorchLearner):
             'total':0.0,
             'crime':copy.deepcopy(self.score_dict),
             'priority':copy.deepcopy(self.score_dict),
+            'advantage':0.0
         }
         self.best_f1score={'crime':0.0,'priority':0.0}
         self.best_acc={'crime':0.0,'priority':0.0}
@@ -53,8 +54,8 @@ class MixedLearner(TorchLearner):
         score_dict['loss']=train_loss/(batch_idx+1)
         score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
         score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
-        score_dict['crime']['total_f1'] = (0.5)*score_dict['crime']['f1score'] + (0.5)*score_dict['priority']['f1score']
-        score_dict['priority']['total_f1'] = (0.5)*score_dict['crime']['f1score'] + (0.5)*score_dict['priority']['f1score']
+        score_dict['crime']['advantage'] = (score_dict['crime']['f1score'] + score_dict['priority']['f1score'])*0.5
+        score_dict['priority']['advantage'] = (score_dict['crime']['f1score'] + score_dict['priority']['f1score'])*0.5
         return score_dict
 
 
@@ -108,14 +109,18 @@ class MixedLearner(TorchLearner):
             self.metric['priority']['targets']=torch.cat((self.metric['priority']['targets'],priority_targets),dim=0)
             
     def _epoch_end_logger(self,epoch,score_dict,mode='train'):
-        
         for model_type in ['crime','priority']:
             this_score_dict=score_dict[model_type]
             self._write_logger(epoch,model_type,this_score_dict,mode)
 
         if mode=='eval':
-            if self.best_advantage<(score_dict['crime']['f1score']+score_dict['priority']['f1score'])/2.0:
-                self.best_advantage=(score_dict['crime']['f1score']+score_dict['priority']['f1score'])/2.0
+            score_dict['advantage']=(score_dict['crime']['f1score']+score_dict['priority']['f1score'])*0.5
+            self.logger.info("Advantage Score: {:.2f} Best Advantage Score: {:.2f} Best Epoch: {}".format(score_dict['advantage'],self.best_advantage,self.best_epoch))
+            if epoch==1:
+                self.best_advantage=score_dict['advantage']
+                self.best_epoch=1
+            if self.best_advantage<(score_dict['crime']['f1score']+score_dict['priority']['f1score'])*0.5:
+                self.best_advantage=(score_dict['crime']['f1score']+score_dict['priority']['f1score'])*0.5
                 self.best_epoch=epoch
                 for model_type in ['crime','priority']:
                     self.best_f1score[model_type]=score_dict[model_type]['f1score']
@@ -126,5 +131,6 @@ class MixedLearner(TorchLearner):
         crime_dict=torch.load(self.save_path,self.configs['file_name'],'best_crime_model.pt')
         priority_dict=torch.load(self.save_path,self.configs['file_name'],'best_priority_model.pt')
         dict_model={'crime':crime_dict,'priority':priority_dict}
+        print("Best Advantage: {:.2f}".format((crime_dict['f1score']+priority_dict['f1score'])*0.5))
         self.model.load_model(dict_model)
         

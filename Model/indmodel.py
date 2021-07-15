@@ -18,9 +18,9 @@ class CrimeModel(nn.Module):
             nn.Dropout(0.5),
             nn.Linear(300,output_space)
         )
-        self.weight1 = torch.tensor([0.2988, 1.0])
-        self.criterion=nn.CrossEntropyLoss(weight=self.weight1)
-        #self.criterion=nn.CrossEntropyLoss()
+        # self.weight1 = torch.tensor([0.2988, 1.0])
+        # self.criterion=nn.CrossEntropyLoss(weight=self.weight1)
+        self.criterion=nn.CrossEntropyLoss()
         # self.criterion=CrossEntropyLoss_weighted()
         # self.criterion=FocalLoss(gamma=0)
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])
@@ -65,9 +65,9 @@ class PriorityModel(nn.Module):
             nn.Dropout(0.5),
             nn.Linear(300,output_space)
         )
-        self.weight2 = torch.tensor([1.0, 0.9431])
-        self.criterion=nn.CrossEntropyLoss(weight=self.weight2)
-        #self.criterion=nn.CrossEntropyLoss()
+        # self.weight2 = torch.tensor([1.0, 0.9431])
+        # self.criterion=nn.CrossEntropyLoss(weight=self.weight2)
+        self.criterion=nn.CrossEntropyLoss()
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=configs['lr'],weight_decay=configs['weight_decay'])
         self.scheduler=torch.optim.lr_scheduler.StepLR(optimizer=self.optimizer,step_size=configs['lr_decay'], gamma=configs['lr_decay_rate'])
 

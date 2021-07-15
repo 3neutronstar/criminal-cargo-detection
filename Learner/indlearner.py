@@ -37,7 +37,6 @@ class TorchLearner(BaseLearner):
         'f1score':0.0,
         'loss':0.0,
         'custom_loss':0.0,
-        'total_f1':0.0
         }
         self.best_f1score=0.0
         self.best_acc=0.0
@@ -187,11 +186,11 @@ class TorchLearner(BaseLearner):
     def _write_logger(self,epoch,model_type,score_dict,mode):
         self.logger=logging.getLogger('{}'.format(mode))
         if score_dict['custom_loss']==0.0:
-            self.logger.info('\n[{} Epoch {}] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f} [total_f1] {:.2f}'.format(
-                epoch,model_type,score_dict['loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score'], score_dict['total_f1']))
+            self.logger.info('\n[{} Epoch {}] [loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
+                epoch,model_type,score_dict['loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score']))
         else:
-            self.logger.info('\n[{} Epoch {}] [ce loss] {:.5f} [custom loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f} [total_f1] {:.2f}'.format(
-                epoch,model_type,score_dict['loss'],score_dict['custom_loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score'], score_dict['total_f1']))
+            self.logger.info('\n[{} Epoch {}] [ce loss] {:.5f} [custom loss] {:.5f} [acc] {:.2f} [precision] {:.2f} [recall] {:.2f} [f1score] {:.2f}'.format(
+                epoch,model_type,score_dict['loss'],score_dict['custom_loss'], score_dict['accuracy'],score_dict['precision'],score_dict['recall'],score_dict['f1score']))
         self.logWriter.add_scalars('{}_{}'.format(mode,model_type),score_dict,epoch)
     
 
