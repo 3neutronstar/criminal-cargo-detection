@@ -41,10 +41,10 @@ class MappingJsonGenerator():
         self.dictionary = dict()
 
         upper_limit = 0
-        self.crime_threshold_no_valid = [150, 7, 3, 3, 40, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, 20, 10, upper_limit, upper_limit, upper_limit, 30, 30, 20, upper_limit, 3]
-        self.priority_threshold_no_valid = [150, 16, 3, 3, 60, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, 30, 15, upper_limit, upper_limit, upper_limit, 30, 25, 15, upper_limit, 3]
-        #self.crime_threshold_no_valid = [0]*21
-        #self.priority_threshold_no_valid = [0]*21
+        #self.crime_threshold_no_valid = [150, 7, 3, 3, 40, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, 20, 10, upper_limit, upper_limit, upper_limit, 30, 30, 20, upper_limit, 3]
+        #self.priority_threshold_no_valid = [150, 16, 3, 3, 60, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, upper_limit, 30, 15, upper_limit, upper_limit, upper_limit, 30, 25, 15, upper_limit, 3]
+        self.crime_threshold_no_valid = [0]*21
+        self.priority_threshold_no_valid = [5]*21
         
     def __call__(self):
         return self.forward()
