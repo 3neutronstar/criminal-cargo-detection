@@ -56,7 +56,7 @@ class MixedLearner(TorchLearner):
                     eval_score_dict=eval_metric['Current']
                 else:
                     print('Prior Advantage is Best')
-                    eval_score_dict=eval_metric['Priority']
+                    eval_score_dict=eval_metric['Prior Best']
             else:
                 eval_score_dict=eval_metric['Current']
             self._epoch_end_logger(epoch,eval_score_dict,'eval')
