@@ -72,7 +72,7 @@ def parse_args(args):
             help='read file name')
     elif parser.parse_known_args(args)[0].mode.lower()=='gen_data' or parser.parse_known_args(args)[0].preprocess==True:
         parser.add_argument(
-            '--split_ratio', '-sr',type=float, default=0.95,
+            '--split_ratio', '-sr',type=float, default=0.85,
             help='split ratio for training_set')
         parser.add_argument(
             '--only_train', type=bool, default=True,

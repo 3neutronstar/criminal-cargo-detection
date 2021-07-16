@@ -1,8 +1,11 @@
+import os
 from Learner.indlearner import TorchLearner
 import torch
+import time
 import copy
+import logging
 class MixedLearner(TorchLearner):
-    def __init__(self, logger,time_data, data_path, save_path, device, configs):
+    def __init__(self, logger:logging,time_data, data_path, save_path, device, configs):
         super(MixedLearner,self).__init__(logger,time_data, data_path, save_path, device, configs)
         self.score_dict={
             'loss':0.0,
@@ -15,7 +18,58 @@ class MixedLearner(TorchLearner):
         self.best_acc={'crime':0.0,'priority':0.0}
         self.best_epoch=0
         self.best_advantage=0.0
-    
+
+
+    def run(self):
+        self.model.to(self.configs['device'])
+        self.logger.info(self.configs)
+
+        for epoch in range(1,self.configs['epochs']+1):
+            train_score_dict=copy.deepcopy(self.score_dict)
+            eval_score_dict=copy.deepcopy(self.score_dict)
+            #Init
+
+            #Train
+            self.metric=dict()# metric
+            print('='*30)
+            train_tik=time.time()
+            train_score_dict=self._train(epoch,train_score_dict)
+            train_tok=time.time()
+            print('\n Learning Rate: {:.8f} Learning Time: {:.3f}s'.format(self.optimizer.param_groups[0]['lr'],train_tok-train_tik))
+            self._epoch_end_logger(epoch,train_score_dict,'train')
+
+            #Eval
+            self.metric=dict()
+            eval_metric={'Current':None,'Prior Best':None}
+            self.logger=logging.getLogger('Current')
+            eval_metric['Current']=self._eval(epoch,eval_score_dict)
+            self.logger.info('[Current eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f}'.format(eval_metric['Current']['crime']['accuracy'],eval_metric['Current']['crime']['f1score'],eval_metric['Current']['priority']['accuracy'],eval_metric['Current']['priority']['f1score']))
+            if epoch>=2:
+                self.save_tmp_model(epoch,eval_metric['Current']['crime'],'Current')
+                self.load_tmp_model('Prior Best')
+                self.logger=logging.getLogger('Prior Best')
+                eval_metric['Prior Best']=self._eval(epoch,eval_score_dict)
+                self.logger.info('[Prior Best eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f}'.format(eval_metric['Prior Best']['crime']['accuracy'],eval_metric['Prior Best']['crime']['f1score'],eval_metric['Prior Best']['priority']['accuracy'],eval_metric['Prior Best']['priority']['f1score']))
+                if eval_metric['Current']['advantage']>eval_metric['Prior Best']['advantage']:
+                    self.load_tmp_model('Current')
+                    print('Current Advantage is Best')
+                    eval_score_dict=eval_metric['Current']
+                else:
+                    print('Prior Advantage is Best')
+                    eval_score_dict=eval_metric['Current']
+            else:
+                eval_score_dict=eval_metric['Current']
+            self._epoch_end_logger(epoch,eval_score_dict,'eval')
+
+            self.scheduler.step()
+        
+        self.logger = logging.getLogger('best')
+        self.logger.info('[Mode {}] [Best Crime Acc {:.2f}] [Best Crime F1 {:.3f}]'.format(self.configs['mode'],self.best_acc['crime'],self.best_f1score['crime']))
+        self.logger.info('[Mode {}] [Best Priority Acc {:.2f}] [Best Priority F1 {:.3f}]'.format(self.configs['mode'],self.best_acc['priority'],self.best_f1score['priority']))
+        advantage_score=0.5*self.best_f1score['crime']+0.5*self.best_f1score['priority']
+        self.logger.info('[Advantage Score] {}'.format(advantage_score))
+
+        print('==End==')    
     def _train(self,epoch,score_dict):
         self.model.train()
         train_loss=0.0
@@ -117,8 +171,12 @@ class MixedLearner(TorchLearner):
             score_dict['advantage']=(score_dict['crime']['f1score']+score_dict['priority']['f1score'])*0.5
             self.logger.info("Advantage Score: {:.2f} Best Advantage Score: {:.2f} Best Epoch: {}".format(score_dict['advantage'],self.best_advantage,self.best_epoch))
             if epoch==1:
-                self.best_advantage=score_dict['advantage']
                 self.best_epoch=1
+                self.best_f1score[model_type]=score_dict[model_type]['f1score']
+                self.best_acc[model_type]=score_dict[model_type]['accuracy']
+                self.best_advantage=score_dict['advantage']
+                for model_type in ['crime','priority']:
+                    self.save_models(epoch,score_dict,model_type)
             if self.best_advantage<(score_dict['crime']['f1score']+score_dict['priority']['f1score'])*0.5:
                 self.best_advantage=(score_dict['crime']['f1score']+score_dict['priority']['f1score'])*0.5
                 self.best_epoch=epoch
@@ -134,3 +192,22 @@ class MixedLearner(TorchLearner):
         print("Best Advantage: {:.2f}".format((crime_dict['f1score']+priority_dict['f1score'])*0.5))
         self.model.load_model(dict_model)
         
+    def save_tmp_model(self,epoch,score_dict,current):
+        if current=='Prior Best':
+            word='best'
+        elif current=='Current':
+            word='tmp'
+        tmp_dict={
+            'crime_model_state_dict':self.model.crime_model.state_dict()}
+        torch.save(tmp_dict,os.path.join(self.save_path,self.time_data,'{}_crime_model.pt'.format(word)))
+
+    def load_tmp_model(self,current):
+        if current=='Prior Best':
+            word='best'
+        elif current=='Current':
+            word='tmp'
+        tmp_dict=torch.load(os.path.join(self.save_path,self.time_data,'{}_crime_model.pt'.format(word)))
+        self.model.crime_model.cpu()
+        self.model.crime_model.load_state_dict(tmp_dict['crime_model_state_dict'])
+        self.model.crime_model.to(self.configs['device'])
+        print('Learning Model is best for priority')

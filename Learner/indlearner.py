@@ -73,15 +73,8 @@ class TorchLearner(BaseLearner):
 
             self.scheduler.step()
         
-        if 'mixed' not in self.configs['mode']:
-            self.logger = logging.getLogger('best')
-            self.logger.info('[Mode {}] [Best Acc {:.2f}] [Best F1 {:.3f}]'.format(self.configs['mode'],self.best_acc,self.best_f1score))
-        else:
-            self.logger = logging.getLogger('best')
-            self.logger.info('[Mode {}] [Best Crime Acc {:.2f}] [Best Crime F1 {:.3f}]'.format(self.configs['mode'],self.best_acc['crime'],self.best_f1score['crime']))
-            self.logger.info('[Mode {}] [Best Priority Acc {:.2f}] [Best Priority F1 {:.3f}]'.format(self.configs['mode'],self.best_acc['priority'],self.best_f1score['priority']))
-            advantage_score=0.5*self.best_f1score['crime']+0.5*self.best_f1score['priority']
-            self.logger.info('[Advantage Score] {}'.format(advantage_score))
+        self.logger = logging.getLogger('best')
+        self.logger.info('[Mode {}] [Best Acc {:.2f}] [Best F1 {:.3f}]'.format(self.configs['mode'],self.best_acc,self.best_f1score))
 
         print('==End==')
 
