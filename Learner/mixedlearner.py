@@ -59,7 +59,8 @@ class MixedLearner(TorchLearner):
             else:
                 eval_score_dict=eval_metric['Current']
             self._epoch_end_logger(epoch,eval_score_dict,'eval')
-            self.load_tmp_model('Current')
+            if epoch>=2:
+                self.load_tmp_model('Current')
             self.scheduler.step()
         
         self.logger = logging.getLogger('best')
