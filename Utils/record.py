@@ -21,13 +21,13 @@ class RecordData:
         self.configs=load_params(configs,current_path,configs['file_name'])
         self.configs['file_name']=configs['file_name']
         if 'crime' in configs['mode']:
-            self.input_space=self.train_dataloader.dataset[0][0].size()[0]
+            self.input_space=self.data_loader.dataset[0][0].size()[0]
             self.output_space=2
         elif 'priority' in configs['mode']:
-            self.input_space=self.train_dataloader.dataset[0][0].size()[0]
+            self.input_space=self.data_loader.dataset[0][0].size()[0]
             self.output_space=2
         else: #mixed
-            self.input_space=[self.train_dataloader.dataset[0][0].size()[0], self.train_dataloader.dataset[0][1].size()[0]]
+            self.input_space=[self.data_loader.dataset[0][0].size()[0], self.data_loader.dataset[0][1].size()[0]]
             self.output_space=2
         self.model=MODEL[self.configs['mode'].split('_')[1]](self.input_space,self.output_space,configs)
         self.metric={}
@@ -101,8 +101,8 @@ class RecordData:
             crime_dict=torch.load(os.path.join(self.save_path,self.configs['file_name'],'best_crime_model.pt'))
             priority_dict=torch.load(os.path.join(self.save_path,self.configs['file_name'],'best_priority_model.pt'))
             print("========== Performances ==========")
-            print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['crime']['f1score'],crime_dict['crime']['accuracy']))
-            print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['priority']['f1score'],priority_dict['priority']['accuracy']))
+            print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['f1score'],crime_dict['accuracy']))
+            print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['f1score'],priority_dict['accuracy']))
             print("==================================")
             dict_model={**crime_dict,**priority_dict}
             self.model.load_model(dict_model)
