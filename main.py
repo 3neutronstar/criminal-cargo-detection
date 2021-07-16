@@ -18,6 +18,7 @@ LEARNER={
     'priority':PriorityLearner,
     'mixed':MixedLearner,
     'xgboost':XGBoostLearner,
+    'eval':MixedLearner,
 }
 
 def parse_args(args):
@@ -26,13 +27,10 @@ def parse_args(args):
         epilog="python run.py mode")
     
     parser.add_argument(
-        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','sj','record','train_xgboost_crime','train_xgboost_priority','tsne_crime','tsne_priority','tsne_mixed'])
+        'mode', type=str,choices=['gen_data','train_crime','train_priority','train_mixed','sj','record','train_xgboost_crime','train_xgboost_priority','tsne_crime','tsne_priority','tsne_mixed','train_eval'])
     #TRAIN SECTION
     parser.add_argument(
         '--seed', type=int, default=1,
-        help='fix random seed')
-    parser.add_argument(
-        '--eval', type=bool, default=False,
         help='fix random seed')
     parser.add_argument(
         '--batch_size', type=int, default=256,
@@ -161,7 +159,7 @@ def main(args):
     ## learner ##
     learner=LEARNER[configs['mode'].split('_')[1]](logger, time_data, data_path, save_path, device, configs)
 
-    if configs['eval']==True:
+    if configs['mode']=='train_eval':
         learner.eval_run()
     else :
         learner.run()

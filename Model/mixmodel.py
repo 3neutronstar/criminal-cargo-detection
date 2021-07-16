@@ -61,15 +61,19 @@ class MixedLossFunction():
 
         return crime_loss,priority_loss
 
-class MixedModel(nn.Module):
+class MixedModel:
     def __init__(self,input_space,output_space,configs):
-        super(MixedModel,self).__init__()
         self.crime_model=CrimeModel(input_space[0],output_space,configs)
         self.priority_model=PriorityModel(input_space[1],output_space,configs)#
         # self.priority_model=PriorityModel(input_space[1],output_space,configs)#+output_space
         self.criterion=MixedLossFunction(self.crime_model.criterion,self.priority_model.criterion,configs)
         self.optimizer=MixedOptimizer(self.crime_model.optimizer,self.priority_model.optimizer)
         self.scheduler=MixedScheduler(self.crime_model.scheduler,self.priority_model.scheduler)
+    
+    def __call__(self,crime_x,priority_x):
+        crime_output,priority_output=self.forward(crime_x,priority_x)
+        return crime_output,priority_output
+        
 
     def forward(self,crime_x,priority_x):
         crime_output=self.crime_model(crime_x)
@@ -88,6 +92,18 @@ class MixedModel(nn.Module):
         dict_model.update(score_dict)
         return dict_model
 
-    def load_model(self,dict_model):
-        self.crime_model.load_state_dict(dict_model['crime_model_state_dict'])
-        self.priority_model.load_state_dict(dict_model['priority_model_state_dict'])
+    def load_model(self,crime_dict_model,priority_dict_model):
+        self.crime_model.load_state_dict(crime_dict_model['crime_model_state_dict'])
+        self.priority_model.load_state_dict(priority_dict_model['priority_model_state_dict'])
+    
+    def to(self,device):
+        self.crime_model.to(device)
+        self.priority_model.to(device)
+    
+    def train(self):
+        self.crime_model.train()
+        self.priority_model.train()
+
+    def eval(self):
+        self.crime_model.eval()
+        self.priority_model.eval()
