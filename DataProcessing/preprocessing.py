@@ -119,8 +119,8 @@ class Preprocessing:
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발' ,'수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
         
-        add_count_ratio_list=['crime_count','total_count']
-        reg_count_ratio_list=['crime_count','total_count']
+        add_count_ratio_list=['crime_count','priority_count','total_count']
+        reg_count_ratio_list=['crime_count','priority_count','total_count']
         np_encoding=None
         print("Before crime transform shape",dataframe.shape)
         for i,column in enumerate(categorical_features):
@@ -225,11 +225,11 @@ class Preprocessing:
         dataframe['관세율구분코드_1자리']=dataframe['관세율구분코드'].str.slice(start = 0, stop = 1)
         dataframe['단위무게(KG)가격'] = (dataframe['과세가격원화금액']/dataframe['신고중량(KG)']).map(lambda x: np.round(x, 0)).map(str)
         dataframe['세금'] = (dataframe['과세가격원화금액']*dataframe['관세율']/dataframe['신고중량(KG)']/100.0)
-        numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율','세금']
+        numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율']
         # numeric_features = ['신고중량(KG)', '과세가격원화금액','관세율']
         for column in numeric_features:
             dataframe[column] = rescaler(dataframe.pop(column).to_numpy())
-        np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율','세금']].to_numpy()
+        np_data = dataframe[['신고중량(KG)', '과세가격원화금액','관세율']].to_numpy()
         np_encoding=None
         dataframe.drop(['신고일자','신고번호','우범여부','핵심적발', '수입자부호'],axis=1,inplace=True,errors='ignore')#,'HS10단위부호'
         len_df = len(dataframe.index)
@@ -243,7 +243,7 @@ class Preprocessing:
             dataframe[column] = dataframe[column].map(str)
             dict_col = self.mapping_dict[column]
             np_count_ratio = np.zeros((len_df,len(add_count_ratio_list)))
-            if column in ['HS_upper','특송업체부호']:
+            if column in []:
                 np_ratio_addition = np.zeros((len_df,1))
                 for row in dataframe[column].index: 
                     val_data = dataframe[column][row]
