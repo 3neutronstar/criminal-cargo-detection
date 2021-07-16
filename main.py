@@ -67,7 +67,7 @@ def parse_args(args):
         help='using csv(true) or preprocessed data(false)')
 
     # mode dependancy
-    if parser.parse_known_args(args)[0].mode.lower()=='record':
+    if parser.parse_known_args(args)[0].mode.lower() in ['record','train_eval']:
         parser.add_argument(
             '--file_name', type=str, default=None,
             help='read file name')

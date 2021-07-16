@@ -113,7 +113,7 @@ class RecordData:
         
     def run_mix(self):
         self.model.eval()        
-        
+        metric=dict()
         with torch.no_grad():
             for batch_idx,(crime_data,priority_data) in enumerate(self.data_loader):
                 crime_data=crime_data.to(self.configs['device'])
@@ -124,7 +124,7 @@ class RecordData:
                 priority_predictions=torch.max(priority_outputs,dim=1)[1].clone()
 
                 priority_predictions[crime_predictions==0]=-1
-                metric=self._save_score(crime_predictions,priority_predictions+1)
+                metric=self._save_score(crime_predictions,priority_predictions+1,metric)
         return copy.deepcopy(metric)
 
     def run_ind(self):
@@ -155,6 +155,7 @@ class RecordData:
             self.test_csv['우범여부']=metric['predictions'].cpu()
         elif self.configs['mode'].split('_')[1]=='priority':
             self.test_csv['핵심적발']=metric['predictions'].cpu()
+        print(len(self.test_csv.index))
         self.test_csv.to_csv(os.path.join(self.save_path,self.configs['file_name']+'_test.csv'))
         return
         
@@ -181,17 +182,17 @@ class RecordData:
         torch.save(dict_model,
         os.path.join(self.save_path,self.time_data,'best_model.pt'))
     
-    def _save_score(self,crime_predictions,priority_predictions):
-        if self.metric==dict():
-            self.metric['crime']=dict()
-            self.metric['priority']=dict()
-            self.metric['crime']['predictions']= crime_predictions
-            self.metric['priority']['predictions']= priority_predictions
+    def _save_score(self,crime_predictions,priority_predictions,metric):
+        if metric==dict():
+            metric['crime']=dict()
+            metric['priority']=dict()
+            metric['crime']['predictions']= crime_predictions
+            metric['priority']['predictions']= priority_predictions
         else:
-            self.metric['crime']['predictions']=torch.cat((self.metric['crime']['predictions'],crime_predictions),dim=0)
-            self.metric['priority']['predictions']=torch.cat((self.metric['priority']['predictions'],priority_predictions),dim=0)
+            metric['crime']['predictions']=torch.cat((metric['crime']['predictions'],crime_predictions),dim=0)
+            metric['priority']['predictions']=torch.cat((metric['priority']['predictions'],priority_predictions),dim=0)
 
-        return self.metric
+        return metric
     
     def _save_scoring(self,crime_predictions,crime_targets,priority_predictions,priority_targets):
         if self.scoring_metric==dict():

@@ -25,14 +25,14 @@ class MixedLearner(TorchLearner):
         self.logger.info(self.configs)
 
 
-        crime_dict=torch.load('C:\\anaconda3\envs\\torch\Customs_Kaggle\crime-cargo-detection\\training_data\\07-16_15-13-31\\best_crime_model.pt')
-        priority_dict=torch.load('C:\\anaconda3\envs\\torch\Customs_Kaggle\crime-cargo-detection\\training_data\\07-16_15-13-31\\best_priority_model.pt')
+        crime_dict=torch.load(os.path.join(self.save_path,self.time_data,'best_crime_model.pt'))
+        priority_dict=torch.load(os.path.join(self.save_path,self.time_data,'best_priority_model.pt'))
         print("========== Performances ==========")
         #print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['f1score'],crime_dict['accuracy']))
         #print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['f1score'],priority_dict['accuracy']))
         print("==================================")
-        dict_model={**crime_dict,**priority_dict}
-        self.model.load_model(dict_model)
+        self.model.crime_model.load_model(crime_dict)
+        self.model.priority_model.load_model(priority_dict)
             
         print("Model Load Complete")
         self.model.to(self.configs['device'])
