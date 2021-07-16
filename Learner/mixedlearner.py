@@ -20,6 +20,36 @@ class MixedLearner(TorchLearner):
         self.best_advantage=0.0
 
 
+    def eval_run(self):
+        self.model.to(self.configs['device'])
+        self.logger.info(self.configs)
+
+
+        crime_dict=torch.load('C:\\anaconda3\envs\\torch\Customs_Kaggle\crime-cargo-detection\\training_data\\07-16_15-13-31\\best_crime_model.pt')
+        priority_dict=torch.load('C:\\anaconda3\envs\\torch\Customs_Kaggle\crime-cargo-detection\\training_data\\07-16_15-13-31\\best_priority_model.pt')
+        print("========== Performances ==========")
+        #print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['f1score'],crime_dict['accuracy']))
+        #print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['f1score'],priority_dict['accuracy']))
+        print("==================================")
+        dict_model={**crime_dict,**priority_dict}
+        self.model.load_model(dict_model)
+            
+        print("Model Load Complete")
+        self.model.to(self.configs['device'])
+
+        if 'mixed' not in self.configs['mode']:
+            metric=self.run_ind()
+        else: #mixed
+            metric=self.run_mix()
+        print("Prediction Complete")
+
+    def run_mix(self):
+        self.model.eval()        
+        eval_score_dict=copy.deepcopy(self.score_dict)
+        print('start runmix')
+        self._eval(1, eval_score_dict)
+        print('finish runmix')
+
     def run(self):
         self.model.to(self.configs['device'])
         self.logger.info(self.configs)
@@ -147,6 +177,7 @@ class MixedLearner(TorchLearner):
         score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
         score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
         score_dict['advantage'] = (score_dict['crime']['f1score'] + score_dict['priority']['f1score'])*0.5
+        print('[Crime] {0:.4f}\t [Priority] {1:.4f}\t [Total F1] {2:.4f}\t'.format(score_dict['crime']['f1score'], score_dict['priority']['f1score'], score_dict['advantage']))
 
         return score_dict
 

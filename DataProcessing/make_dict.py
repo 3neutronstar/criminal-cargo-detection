@@ -4,7 +4,7 @@ import os
 from matplotlib import font_manager, rc
 
 class MappingJsonGenerator():
-    def __init__(self, train_csv, fillna_str, drop_list, only_train, data_path):
+    def __init__(self, train_csv, fillna_str, drop_list, only_train, data_path = None):
         
         self.only_train = only_train
         self.train_csv=train_csv
@@ -22,8 +22,8 @@ class MappingJsonGenerator():
         self.train_csv.drop(['과세가격원화금액', '신고중량(KG)'], axis = 1,errors='ignore',inplace=True)
         
         if self.only_train:
-            # train_indices = np.load('./data/custom_contest/train_indices.npy')
-            train_indices = np.load(os.path.join(data_path,'train_indices.npy'))
+            train_indices = np.load('./data/custom_contest/train_indices.npy')
+            #train_indices = np.load(os.path.join(data_path,'train_indices.npy'))
             self.train_valid_csv = self.train_csv
             self.train_csv = self.train_valid_csv[self.train_valid_csv.columns].iloc[train_indices]
             self.train_valid_csv=self.train_valid_csv.drop(['우범여부', '핵심적발'] + self.drop_list, axis = 1,errors='ignore')
