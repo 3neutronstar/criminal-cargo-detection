@@ -104,8 +104,6 @@ class RecordData:
             print(crime_dict['crime']['f1score'])
             # print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['f1score'],crime_dict['accuracy']))
             # print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['f1score'],priority_dict['accuracy']))
-            print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['crime']['f1score'],crime_dict['crime']['accuracy']))
-            print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['priority']['f1score'],priority_dict['priority']['accuracy']))
             print("==================================")
             dict_model={**crime_dict,**priority_dict}
             self.model.load_model(dict_model)
