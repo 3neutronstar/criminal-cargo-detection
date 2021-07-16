@@ -43,23 +43,25 @@ class MixedLearner(TorchLearner):
             eval_metric={'Current':None,'Prior Best':None}
             self.logger=logging.getLogger('Current')
             eval_metric['Current']=self._eval(epoch,eval_score_dict)
-            self.logger.info('[Current eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f}'.format(eval_metric['Current']['crime']['accuracy'],eval_metric['Current']['crime']['f1score'],eval_metric['Current']['priority']['accuracy'],eval_metric['Current']['priority']['f1score']))
+            self.logger.info('[Current eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f} [adv] {:.2f}'.format(eval_metric['Current']['crime']['accuracy'],eval_metric['Current']['crime']['f1score'],eval_metric['Current']['priority']['accuracy'],eval_metric['Current']['priority']['f1score'],eval_metric['Current']['advantage']))
             if epoch>=2:
+                eval_score_dict=copy.deepcopy(self.score_dict)
                 self.save_tmp_model(epoch,eval_metric['Current']['crime'],'Current')
                 self.load_tmp_model('Prior Best')
                 self.logger=logging.getLogger('Prior Best')
                 eval_metric['Prior Best']=self._eval(epoch,eval_score_dict)
-                self.logger.info('[Prior Best eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f}'.format(eval_metric['Prior Best']['crime']['accuracy'],eval_metric['Prior Best']['crime']['f1score'],eval_metric['Prior Best']['priority']['accuracy'],eval_metric['Prior Best']['priority']['f1score']))
+                self.logger.info('[Prior Best eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f} [adv] {:.2f}'.format(eval_metric['Prior Best']['crime']['accuracy'],eval_metric['Prior Best']['crime']['f1score'],eval_metric['Prior Best']['priority']['accuracy'],eval_metric['Prior Best']['priority']['f1score'],eval_metric['Prior Best']['advantage']))
                 if eval_metric['Current']['advantage']>eval_metric['Prior Best']['advantage']:
                     print('Current Advantage is Best')
                     eval_score_dict=eval_metric['Current']
                     self.load_tmp_model('Current')
+                    self.save_tmp_model(epoch,eval_score_dict,'Prior Best')
                 else:
                     print('Prior Advantage is Best')
-                    eval_score_dict=eval_metric['Prior Best']
-                   
+                    eval_score_dict=eval_metric['Prior Best']   
             else:
                 eval_score_dict=eval_metric['Current']
+
             self._epoch_end_logger(epoch,eval_score_dict,'eval')
             if epoch>=2:
                 self.load_tmp_model('Current')
@@ -110,8 +112,7 @@ class MixedLearner(TorchLearner):
         score_dict['loss']=train_loss/(batch_idx+1)
         score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
         score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
-        score_dict['crime']['advantage'] = (score_dict['crime']['f1score'] + score_dict['priority']['f1score'])*0.5
-        score_dict['priority']['advantage'] = (score_dict['crime']['f1score'] + score_dict['priority']['f1score'])*0.5
+        score_dict['advantage'] = (score_dict['crime']['f1score'] + score_dict['priority']['f1score'])*0.5
         return score_dict
 
 
@@ -145,8 +146,7 @@ class MixedLearner(TorchLearner):
         score_dict['loss']=eval_loss/(batch_idx+1)
         score_dict['crime']['loss']=score_dict['crime']['loss']/(batch_idx+1)
         score_dict['priority']['loss']=score_dict['priority']['loss']/(batch_idx+1)
-        score_dict['crime']['total_f1'] = (0.5)*score_dict['crime']['f1score'] + (0.5)*score_dict['priority']['f1score']
-        score_dict['priority']['total_f1'] = (0.5)*score_dict['crime']['f1score'] + (0.5)*score_dict['priority']['f1score']
+        score_dict['advantage'] = (score_dict['crime']['f1score'] + score_dict['priority']['f1score'])*0.5
 
         return score_dict
 
@@ -212,4 +212,3 @@ class MixedLearner(TorchLearner):
         self.model.crime_model.cpu()
         self.model.crime_model.load_state_dict(tmp_dict['crime_model_state_dict'])
         self.model.crime_model.to(self.configs['device'])
-        print('Learning Model is best for priority')
