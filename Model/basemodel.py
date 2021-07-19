@@ -6,4 +6,5 @@ MODEL={
     'crime':CrimeModel,
     'priority':PriorityModel,
     'mixed':MixedModel,
+    'eval':MixedModel,
 }

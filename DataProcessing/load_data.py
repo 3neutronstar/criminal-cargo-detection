@@ -72,7 +72,7 @@ def load_dataset(data_path,configs):
             train_dataset=TensorDataset(train_data, train_target)
             valid_dataset=TensorDataset(valid_data, valid_target)
 
-        elif configs['mode']=='train_mixed':
+        elif configs['mode'] in ['train_mixed','train_eval']:
             #mixed
             mixed_dataset=TensorDataset(npy_dict['train_crime_data'],npy_dict['train_priority_data'],npy_dict['crime_targets'],npy_dict['priority_targets'])
             train_dataset=Subset(mixed_dataset,npy_dict['train_indices'])
