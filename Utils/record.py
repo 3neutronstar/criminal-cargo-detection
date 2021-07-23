@@ -100,7 +100,7 @@ class RecordData:
         print("Model Load Complete")
         self.model.to(self.configs['device'])
         # eval하는거 성능측정 확인
-        self._eval_before_save()
+        #self._eval_before_save()
 
         if 'mixed' not in self.configs['mode']:
             metric=self.run_ind()
@@ -155,8 +155,8 @@ class RecordData:
             self.test_csv['우범여부']=metric['predictions'].cpu()
         elif self.configs['mode'].split('_')[1]=='priority':
             self.test_csv['핵심적발']=metric['predictions'].cpu()
-        print(len(self.test_csv.index))
-        self.test_csv.to_csv(os.path.join(self.save_path,self.configs['file_name']+'_test.csv'))
+        print('Checking length of test.csv :', len(self.test_csv.index))
+        self.test_csv.to_csv(os.path.join(self.save_path,self.configs['file_name']+'_test.csv'), index = False)
         return
         
     def _load_model(self):
@@ -166,18 +166,18 @@ class RecordData:
         else: 
             crime_dict=copy.deepcopy(torch.load(os.path.join(self.save_path,self.configs['file_name'],'best_crime_model.pt')))
             priority_dict=copy.deepcopy(torch.load(os.path.join(self.save_path,self.configs['file_name'],'best_priority_model.pt')))
-            print("========== Performances ==========")
-            print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['f1score'],crime_dict['accuracy']))
-            print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['f1score'],priority_dict['accuracy']))
-            print("Advantage: {:.3f}".format((crime_dict['f1score']+priority_dict['f1score'])*0.5))
-            print("==================================")
+            # print("========== Performances ==========")
+            # print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['f1score'],crime_dict['accuracy']))
+            # print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['f1score'],priority_dict['accuracy']))
+            # print("Advantage: {:.3f}".format((crime_dict['f1score']+priority_dict['f1score'])*0.5))
+            # print("==================================")
             
             # Modified
             dict_model={**crime_dict,**priority_dict}
             self.model.load_model(dict_model)
 
             # Origin
-            #self.model.load_model(crime_dict,priority_dict)
+            # self.model.load_model(crime_dict,priority_dict)
         
 
     def save_models(self,epoch, score_dict):

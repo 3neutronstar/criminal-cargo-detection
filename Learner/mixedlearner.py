@@ -25,14 +25,14 @@ class MixedLearner(TorchLearner):
         self.logger.info(self.configs)
 
 
-        crime_dict=torch.load(os.path.join(self.save_path,self.time_data,'best_crime_model.pt'))
-        priority_dict=torch.load(os.path.join(self.save_path,self.time_data,'best_priority_model.pt'))
+        crime_dict=torch.load('C:\\anaconda3\envs\\torch\Customs_Kaggle\crime-cargo-detection\\training_data\\07-16_15-13-31\\best_crime_model.pt')
+        priority_dict=torch.load('C:\\anaconda3\envs\\torch\Customs_Kaggle\crime-cargo-detection\\training_data\\07-16_15-13-31\\best_priority_model.pt')
         print("========== Performances ==========")
         #print("crime F1: {:.3f} crime Acc: {:.3f}".format(crime_dict['f1score'],crime_dict['accuracy']))
         #print("priority F1: {:.3f} priority Acc: {:.3f}".format(priority_dict['f1score'],priority_dict['accuracy']))
         print("==================================")
-        self.model.crime_model.load_model(crime_dict)
-        self.model.priority_model.load_model(priority_dict)
+        dict_model={**crime_dict,**priority_dict}
+        self.model.load_model(dict_model)
             
         print("Model Load Complete")
         self.model.to(self.configs['device'])
@@ -73,14 +73,14 @@ class MixedLearner(TorchLearner):
             eval_metric={'Current':None,'Prior Best':None}
             self.logger=logging.getLogger('Current')
             eval_metric['Current']=self._eval(epoch,eval_score_dict)
-            self.logger.info('[Current eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f} [adv] {:.2f}'.format(eval_metric['Current']['crime']['accuracy'],eval_metric['Current']['crime']['f1score'],eval_metric['Current']['priority']['accuracy'],eval_metric['Current']['priority']['f1score'],eval_metric['Current']['advantage']))
+            #self.logger.info('[Current eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f} [adv] {:.2f}'.format(eval_metric['Current']['crime']['accuracy'],eval_metric['Current']['crime']['f1score'],eval_metric['Current']['priority']['accuracy'],eval_metric['Current']['priority']['f1score'],eval_metric['Current']['advantage']))
             if epoch>=2:
                 eval_score_dict=copy.deepcopy(self.score_dict)
                 self.save_tmp_model(epoch,eval_metric['Current']['crime'],'Current')
                 self.load_tmp_model('Prior Best')
                 self.logger=logging.getLogger('Prior Best')
                 eval_metric['Prior Best']=self._eval(epoch,eval_score_dict)
-                self.logger.info('[Prior Best eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f} [adv] {:.2f}'.format(eval_metric['Prior Best']['crime']['accuracy'],eval_metric['Prior Best']['crime']['f1score'],eval_metric['Prior Best']['priority']['accuracy'],eval_metric['Prior Best']['priority']['f1score'],eval_metric['Prior Best']['advantage']))
+                #self.logger.info('[Prior Best eval] Crime Acc: {:.2f} F1: {:.2f} Priority Acc: {:.2f} F1 {:.2f} [adv] {:.2f}'.format(eval_metric['Prior Best']['crime']['accuracy'],eval_metric['Prior Best']['crime']['f1score'],eval_metric['Prior Best']['priority']['accuracy'],eval_metric['Prior Best']['priority']['f1score'],eval_metric['Prior Best']['advantage']))
                 if eval_metric['Current']['advantage']>eval_metric['Prior Best']['advantage']:
                     print('Current Advantage is Best')
                     eval_score_dict=copy.deepcopy(eval_metric['Current'])
@@ -131,8 +131,8 @@ class MixedLearner(TorchLearner):
             if batch_idx%50==1:
                 crime_acc=(self.metric['crime']['predictions']==self.metric['crime']['targets']).sum()/self.metric['crime']['targets'].size(0)*100.0
                 priority_acc=(self.metric['priority']['predictions']==self.metric['priority']['targets']).sum()/self.metric['priority']['targets'].size(0)*100.0
-                print('\r{}epoch {}/{}, [Crime Acc] {:.2f} [Priority Acc] {:.2f}  [Loss] {:.5f}'.format(epoch,int(score_dict['total']),
-                len(self.train_dataloader.dataset),crime_acc,priority_acc,train_loss/(batch_idx+1)),end='')
+                #print('\r{}epoch {}/{}, [Crime Acc] {:.2f} [Priority Acc] {:.2f}  [Loss] {:.5f}'.format(epoch,int(score_dict['total']),
+                print('\r{}epoch {}/{}'.format(epoch,int(score_dict['total']), len(self.train_dataloader.dataset)),end='')
 
         # crime
         score_dict['crime']=self._get_score(self.metric['crime']['predictions'],self.metric['crime']['targets'],score_dict['crime'])
