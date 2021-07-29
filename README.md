@@ -1,5 +1,5 @@
 # crime-cargo-detection
-crime-cargo-detection
+crime-cargo-detection, 2021 한국 관세청 우범화물 탐지 경진대회 F1 51.0251 (2nd prize)
 
 ### How to Reproduce
 #### Check the generated log
