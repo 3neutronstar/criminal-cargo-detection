@@ -129,7 +129,7 @@ class Preprocessing:
             dataframe[column] = dataframe[column].map(str)
             dict_col = self.mapping_dict[column]
             np_count_ratio = np.zeros((len_df,len(add_count_ratio_list)))
-            if column in ['HS_upper','특송업체부호']:
+            if column in []:#['HS_upper','특송업체부호']:
                 np_ratio_addition = np.zeros((len_df,1))
                 for row in dataframe[column].index: 
                     val_data = dataframe[column][row]
