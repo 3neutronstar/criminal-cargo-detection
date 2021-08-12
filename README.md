@@ -1,5 +1,5 @@
-# crime-cargo-detection
-crime-cargo-detection, 2021 한국 관세청 우범화물 탐지 경진대회 F1 51.0251 (1st prize)
+# criminal-cargo-detection
+criminal-cargo-detection, 2021 한국 관세청 우범화물 탐지 경진대회 F1 51.0251 (1st prize)
 
 ### How to Reproduce
 #### Check the generated log
@@ -8,7 +8,7 @@ crime-cargo-detection, 2021 한국 관세청 우범화물 탐지 경진대회 F1
 - CPU: i7-8700k
 - GPU: GTX-1060 6GB, CUDA 11.4
 - RAM: 32GB
-- (If you don't satisfiy this device setting, you could get different results.)
+
 #### Installation(Recomment conda)
 - Python 3.8 (Recommend to install when you create conda env `conda create -n [env name] python=3.8`) -> you could get another version of python
 - Pytorch(1.9.0) htts://pytorch.org/
@@ -43,7 +43,7 @@ or
 ```shell script
     pip install seaborn 0.11.1
 ```
-- Warning: If you don't satisfy all the condition we have, you couldn't get the same result
+
 #### Find the seed fixed
 - `Utils\seed.py` that are referenced from `main.py`
 ### How to use
@@ -51,13 +51,10 @@ or
 ``` shell script
     python main.py record --file_name 07-16_21-16-00
 ```
-- To reproduce the learning weight(If you didn't set the exact same environment, then you could get different result!!!)
-- `Warning: if you use '--preprocess True' option, generated dataset(we provided) would be changed.(Valid dataset generation would affect to the calcuation of train dataset preprocess.`
+- To reproduce the learning weight
 ``` shell script
     python main.py train_mixed --preprocess True --epoch 50 -sr 0.80 --custom_loss fbeta_loss --seed 11 --lr 0.001 --beta 15 --lambda 0.3
 ```
-
-`python main.py train_mixed --preprocess True --epoch 50 -sr 0.80 --custom_loss fbeta_loss --seed 11 --lr 0.001 --beta 15 --lambda 0.3`</br>
 명령어를 통해 학습을 진행합니다. 학습이 마무리된 모델 파라미터와 전처리에 사용된 json 파일이 training_data 폴더 내에 학습 당시의 시간을 나타내는 [월-일_시-분-초]의 이름의 폴더 및 json 파일로 생성됩니다. </br>
 
 `python main.py record --file_name "폴더이름"`
